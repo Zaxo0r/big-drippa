@@ -1,0 +1,16 @@
+# Arduino / ESP32 build artifacts
+build/
+*.bin
+*.elf
+*.hex
+*.map
+
+# Local credentials — copy secrets.h.example to secrets.h (never commit the real one)
+secrets.h
+
+# Editor / IDE
+.vscode/
+
+# OS cruft
+.DS_Store
+Thumbs.db

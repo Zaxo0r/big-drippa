@@ -4,8 +4,8 @@ An ESP32-based **drip-irrigation controller** that keeps a small balcony garden 
 multi-day absences. One watering zone feeds every plant at once; per-plant flow is tuned with
 adjustable drippers rather than separate circuits.
 
-The garden: one *pallkråge* raised bed (~77×58 cm) with jalapeño, broccoli, and grönkål, plus
-several buckets of jalapeños and potatoes — outdoors, in Sweden.
+The garden: one *pallkrage* raised bed (~77×58 cm) with jalapeño, broccoli, and grönkål, plus
+several buckets of jalapeños, potatoes and tomatoes — outdoors, in Sweden.
 
 ## Repository layout
 

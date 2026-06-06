@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Big Drippa</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f7f5;
+      color: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    main {
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:active { opacity: 0.8; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    #sign-in-btn {
+      background: #fff;
+      color: #333;
+      border: 2px solid #ddd;
+      margin-bottom: 1rem;
+    }
+
+    #water-btn {
+      background: #2e7d32;
+      color: #fff;
+      padding: 1.5rem;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    #sign-out-btn {
+      background: transparent;
+      color: #888;
+      font-size: 0.85rem;
+      padding: 0.5rem;
+    }
+
+    .user-info {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #status {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #555;
+      min-height: 1.5em;
+    }
+
+    #auth-error {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #c62828;
+    }
+
+    .hidden { display: none; }
+
+    /* ---- Status card ---- */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-top: 1.5rem;
+      text-align: left;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-bottom: 0.8rem;
+    }
+
+    .pump-status {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot.idle { background: #aaa; }
+    .dot.running { background: #2e7d32; animation: pulse 1.5s infinite; }
+    .dot.offline { background: #c62828; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .device-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .device-info dt { color: #999; }
+    .device-info dd { font-weight: 500; }
+
+    /* ---- History ---- */
+    .history-list {
+      list-style: none;
+      margin-top: 0.5rem;
+    }
+
+    .history-list li {
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .history-list li:last-child { border-bottom: none; }
+
+    .history-time {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .history-detail {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .empty-history {
+      color: #aaa;
+      font-size: 0.85rem;
+      font-style: italic;
+      padding: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Big Drippa</h1>
+    <p class="subtitle">Drip Irrigation Controller</p>
+
+    <div id="auth-section">
+      <button id="sign-in-btn">Sign in with Google</button>
+      <p id="auth-error"></p>
+    </div>
+
+    <div id="control-section" class="hidden">
+      <p class="user-info">Signed in as <span id="user-name"></span></p>
+      <button id="water-btn">Water Now</button>
+      <p id="status"></p>
+
+      <!-- Pump & device status -->
+      <div class="card">
+        <h2>Pump</h2>
+        <div class="pump-status">
+          <span class="dot idle" id="pump-dot"></span>
+          <span id="pump-label">Idle</span>
+        </div>
+        <dl class="device-info">
+          <dt>Device</dt>
+          <dd id="device-online">--</dd>
+          <dt>Uptime</dt>
+          <dd id="device-uptime">--</dd>
+          <dt>WiFi</dt>
+          <dd id="device-wifi">--</dd>
+          <dt>Last seen</dt>
+          <dd id="device-lastseen">--</dd>
+        </dl>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <h2>History</h2>
+        <ul class="history-list" id="history-list">
+          <li class="empty-history">No watering events yet</li>
+        </ul>
+      </div>
+
+      <button id="sign-out-btn">Sign out</button>
+    </div>
+  </main>
+
+  <script type="module">
+    const firebaseConfig = {
+      apiKey:        "AIzaSyBxdyoO7Wbmsk5-G6Suqxgwju3EsHhHkxM",
+      authDomain:    "big-drippa.firebaseapp.com",
+      databaseURL:   "https://big-drippa-default-rtdb.europe-west1.firebasedatabase.app/",
+      projectId:     "big-drippa",
+    };
+
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js");
+    const { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } =
+      await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js");
+    const { getDatabase, ref, set, onValue, query, orderByKey, limitToLast } =
+      await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js");
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    // ---- DOM ----
+    const authSection    = document.getElementById("auth-section");
+    const controlSection = document.getElementById("control-section");
+    const userName       = document.getElementById("user-name");
+    const waterBtn       = document.getElementById("water-btn");
+    const statusEl       = document.getElementById("status");
+    const signInBtn      = document.getElementById("sign-in-btn");
+    const signOutBtn     = document.getElementById("sign-out-btn");
+    const authError      = document.getElementById("auth-error");
+    const pumpDot        = document.getElementById("pump-dot");
+    const pumpLabel      = document.getElementById("pump-label");
+    const deviceOnline   = document.getElementById("device-online");
+    const deviceUptime   = document.getElementById("device-uptime");
+    const deviceWifi     = document.getElementById("device-wifi");
+    const deviceLastseen = document.getElementById("device-lastseen");
+    const historyList    = document.getElementById("history-list");
+
+    // ---- Helpers ----
+    function formatUptime(ms) {
+      const s = Math.floor(ms / 1000);
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (d > 0) return d + "d " + h + "h";
+      if (h > 0) return h + "h " + m + "m";
+      return m + "m " + (s % 60) + "s";
+    }
+
+    function formatTime(epoch) {
+      if (!epoch) return "--";
+      const d = new Date(epoch * 1000);
+      return d.toLocaleString();
+    }
+
+    function wifiLabel(rssi) {
+      if (rssi >= -50) return rssi + " dBm (excellent)";
+      if (rssi >= -60) return rssi + " dBm (good)";
+      if (rssi >= -70) return rssi + " dBm (fair)";
+      return rssi + " dBm (weak)";
+    }
+
+    // ---- Listeners (activated after sign-in) ----
+    let unsubStatus = null;
+    let unsubHistory = null;
+
+    function startListeners() {
+      // Status
+      unsubStatus = onValue(ref(db, "/status"), (snap) => {
+        const data = snap.val();
+        if (!data) return;
+
+        // Pump state
+        if (data.pumpRunning) {
+          pumpDot.className = "dot running";
+          pumpLabel.textContent = "Running";
+        } else {
+          pumpDot.className = "dot idle";
+          pumpLabel.textContent = "Idle";
+        }
+
+        // Online/offline (stale if lastUpdated > 10s ago)
+        const nowSec = Math.floor(Date.now() / 1000);
+        const staleSec = nowSec - (data.lastUpdated || 0);
+        if (staleSec > 10) {
+          deviceOnline.textContent = "Offline";
+          pumpDot.className = "dot offline";
+          pumpLabel.textContent = "Offline";
+        } else {
+          deviceOnline.textContent = "Online";
+        }
+
+        deviceUptime.textContent = data.uptimeMs ? formatUptime(data.uptimeMs) : "--";
+        deviceWifi.textContent = data.wifiRSSI ? wifiLabel(data.wifiRSSI) : "--";
+        deviceLastseen.textContent = data.lastUpdated ? formatTime(data.lastUpdated) : "--";
+      });
+
+      // History (last 10 entries)
+      const historyQuery = query(ref(db, "/history"), orderByKey(), limitToLast(10));
+      unsubHistory = onValue(historyQuery, (snap) => {
+        const data = snap.val();
+        if (!data) {
+          historyList.innerHTML = '<li class="empty-history">No watering events yet</li>';
+          return;
+        }
+
+        const entries = Object.entries(data).sort((a, b) => b[0] - a[0]);
+        historyList.innerHTML = entries.map(([key, e]) => {
+          const time = formatTime(e.startedAt);
+          return `<li>
+            <span class="history-time">${time}</span><br>
+            <span class="history-detail">${e.durationSec}s &middot; ${e.trigger} &middot; ${e.stoppedReason}</span>
+          </li>`;
+        }).join("");
+      });
+    }
+
+    function stopListeners() {
+      if (unsubStatus) { unsubStatus(); unsubStatus = null; }
+      if (unsubHistory) { unsubHistory(); unsubHistory = null; }
+    }
+
+    // ---- Auth state ----
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authSection.classList.add("hidden");
+        controlSection.classList.remove("hidden");
+        userName.textContent = user.displayName || user.email;
+        statusEl.textContent = "";
+        startListeners();
+      } else {
+        authSection.classList.remove("hidden");
+        controlSection.classList.add("hidden");
+        stopListeners();
+      }
+    });
+
+    signInBtn.addEventListener("click", () => {
+      authError.textContent = "";
+      signInWithPopup(auth, provider).catch((err) => {
+        authError.textContent = "Sign-in failed: " + err.message;
+      });
+    });
+
+    signOutBtn.addEventListener("click", () => signOut(auth));
+
+    // ---- Water Now ----
+    waterBtn.addEventListener("click", async () => {
+      waterBtn.disabled = true;
+      statusEl.textContent = "Sending command...";
+      try {
+        await set(ref(db, "/commands/manualRun"), true);
+        statusEl.textContent = "Command sent! Pump should start within a few seconds.";
+      } catch (err) {
+        statusEl.textContent = "Error: " + err.message;
+      }
+      setTimeout(() => { waterBtn.disabled = false; }, 5000);
+    });
+  </script>
+</body>
+</html>

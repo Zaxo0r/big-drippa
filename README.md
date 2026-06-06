@@ -13,19 +13,15 @@ This is a monorepo; each component lives in its own folder.
 
 | Folder | What | Status |
 |--------|------|--------|
-| [`irrigation/`](irrigation/) | ESP32 firmware (Arduino sketch) | **Phase 1 — active** |
-| `web/` *(later)* | Static web app for remote monitoring/control | Phase 2 — not created yet |
+| [`irrigation/`](irrigation/) | ESP32 firmware (Arduino sketch) | **Phase 2 — active** |
+| [`web/`](web/) | Static web app for remote control | **Phase 2 — active** |
 
-## Phases
+## How it works
 
-**Phase 1 — local only (current).** The ESP32 waters on a fixed schedule with no network
-dependency. A **MOS hardware timer wired in series with the pump** is an independent safety
-cutoff that fires even if the firmware hangs.
-
-**Phase 2 — remote (future).** WiFi + Firebase Realtime Database (Google Sign-In, per-UID
-rules) with two channels — `/commands` (web → ESP32) and `/history` (ESP32 → telemetry) — and
-a static web app on Firebase Hosting. The web app will live in a sibling `web/` folder in this
-same repo.
+The ESP32 connects to WiFi and polls Firebase Realtime Database for a manual-run command. A
+static web app in [`web/`](web/) lets you trigger the pump remotely via Google Sign-In. A **MOS
+hardware timer wired in series with the pump** is an independent safety cutoff that fires even
+if the firmware hangs.
 
 ## Getting started
 

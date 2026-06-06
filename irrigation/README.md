@@ -1,7 +1,7 @@
 # Big Drippa — ESP32 Firmware (`irrigation`)
 
-Phase 1 firmware for the Big Drippa drip-irrigation controller: scheduled, local-only watering
-on an ESP32. See the [repo overview](../README.md) for the big picture.
+Firmware for the Big Drippa drip-irrigation controller: the pump is triggered remotely via
+Firebase RTDB from a web app. See the [repo overview](../README.md) for the big picture.
 
 > **Why this folder is named `irrigation/`:** the Arduino toolchain requires a sketch to live
 > in a folder with the same name as its `.ino`, so `irrigation.ino` must sit in `irrigation/`.
@@ -25,11 +25,10 @@ simultaneously; per-plant flow is tuned with adjustable drippers.
 
 ## Pin table
 
-> Placeholder — confirm and fill in once wired (see [`docs/wiring.md`](docs/wiring.md)).
-
 | Signal | ESP32 GPIO | Connects to | Notes |
 |--------|-----------|-------------|-------|
-| Pump relay | `GPIO 26` | Relay IN | High-level trigger; HIGH = pump on |
+| Pump relay | `GPIO 23` | Relay IN | High-level trigger; HIGH = pump on |
+| Timer trigger | `GPIO 22` | MOS timer trigger | Short HIGH pulse arms the hardware timer |
 | Status LED | `GPIO 2` | Onboard LED | Lit while the pump runs |
 
 Pins are defined in [`config.h`](config.h).
@@ -51,9 +50,9 @@ Full notes: [`docs/wiring.md`](docs/wiring.md). First-time bring-up:
 
 Tune everything in [`config.h`](config.h):
 
-- `RELAY_PIN`, `STATUS_LED_PIN`
-- `WATERING_INTERVAL_HOURS`, `WATERING_DURATION_SECONDS`
+- `RELAY_PIN`, `TIMER_TRIGGER_PIN`, `STATUS_LED_PIN`
 - `MAX_PUMP_ON_SECONDS` — software safety cap; keep it **below** the MOS hardware-timer cutoff.
+- `FIREBASE_POLL_INTERVAL_MS` — how often the ESP32 checks Firebase for commands (default 3 s).
 
 ## Build & flash
 
@@ -61,20 +60,16 @@ Tune everything in [`config.h`](config.h):
 2. Open `irrigation/irrigation.ino` in the Arduino IDE.
 3. Select board **ESP32 Dev Module** (ESP32 WROOM DevKit) and the correct serial port.
 4. Upload over USB.
-5. Open Serial Monitor at **115200 baud** to watch the schedule logs.
+5. Open Serial Monitor at **115200 baud** to watch logs.
 
-Phase 1 needs no `secrets.h`. For Phase 2, copy `secrets.h.example` → `secrets.h` and fill it
-in (`secrets.h` is gitignored).
+Copy `secrets.h.example` → `secrets.h` and fill in your WiFi and Firebase credentials
+(`secrets.h` is gitignored). See the example file for details on each field.
 
 ## Libraries
 
-- **Phase 1:** none beyond the ESP32 Arduino core.
-- **Phase 2 (not yet `#include`d):**
-  - [Firebase-ESP-Client (Mobizt)](https://github.com/mobizt/Firebase-ESP-Client)
-  - [ArduinoJson](https://arduinojson.org/)
-
-Pin exact versions here once Phase 2 starts. We use globally-installed libraries for now and
-will only vendor them into a `libraries/` folder if a version conflict forces it.
+- **ESP32 Arduino core** (built-in WiFi)
+- [**FirebaseClient** (Mobizt)](https://github.com/mobizt/FirebaseClient) — install via Arduino
+  Library Manager (search "FirebaseClient"). This replaces the deprecated Firebase-ESP-Client.
 
 ## Safety
 
@@ -87,10 +82,10 @@ will only vendor them into a `libraries/` folder if a version conflict forces it
 
 ## Scope
 
-| | Phase 1 (now) | Phase 2 (future) |
-|---|---|---|
-| Watering | Scheduled, on-device | + manual/remote via Firebase `/commands` |
-| Network | None | WiFi |
-| Cloud | None | Firebase RTDB (`/commands`, `/history`), Google Sign-In |
-| Updates | USB flashing | + OTA (ArduinoOTA) |
-| Web app | — | Static site on Firebase Hosting (sibling `web/` folder) |
+| Feature | Status |
+|---|---|
+| Watering | Manual trigger via Firebase `/commands` |
+| Network | WiFi |
+| Cloud | Firebase RTDB, Google Sign-In |
+| Updates | USB flashing |
+| Web app | Static site in sibling [`web/`](../web/) folder |

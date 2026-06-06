@@ -1,237 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0A141C" />
   <title>Big Drippa</title>
+  <link rel="icon" href="assets/logo-drop.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
+    /* =====================================================================
+       Big Drippa — design tokens (from the Big Drippa Design System)
+       ===================================================================== */
+    :root {
+      /* Water-ink neutrals (surfaces, deepest -> most elevated) */
+      --ink-1000: #070E14;
+      --ink-900:  #0A141C;
+      --ink-800:  #0F1C26;
+      --ink-700:  #142531;
+      --ink-600:  #1B3340;
+      --ink-500:  #244456;
+      --ink-400:  #335568;
+
+      /* Aqua — the "drip" accent */
+      --aqua-200: #C6FBF3;
+      --aqua-300: #82F0E4;
+      --aqua-400: #38E2D2;
+      --aqua-500: #14C8B8;
+      --aqua-600: #0BA294;
+      --aqua-700: #0A7B72;
+      --aqua-glow: rgba(20, 200, 184, 0.30);
+
+      /* Leaf — grow / healthy / online */
+      --leaf-300: #A9E8B6;
+      --leaf-400: #6FD089;
+      --leaf-500: #3FAE63;
+      --leaf-600: #2C8A4E;
+
+      /* Amber — pump live / energized / caution */
+      --amber-300: #FFD98A;
+      --amber-400: #FFC24D;
+      --amber-500: #F5A623;
+      --amber-600: #D2851A;
+      --amber-glow: rgba(245, 166, 35, 0.28);
+
+      /* Clay — danger / offline / destructive */
+      --clay-300: #FFB3A6;
+      --clay-400: #F58372;
+      --clay-500: #E45A48;
+      --clay-600: #C2402F;
+
+      /* Text on dark */
+      --text-hi:   #ECF6F5;
+      --text-mid:  #A6BEC6;
+      --text-low:  #65808C;
+      --text-on-aqua: #04201D;
+      --text-on-amber: #2A1A03;
+
+      /* Semantic aliases */
+      --bg-app:        var(--ink-900);
+      --bg-void:       var(--ink-1000);
+      --surface:       var(--ink-700);
+      --surface-2:     var(--ink-600);
+      --surface-sunk:  var(--ink-800);
+      --border:        var(--ink-500);
+      --border-soft:   var(--ink-600);
+      --border-strong: var(--ink-400);
+      --accent:        var(--aqua-500);
+      --accent-hover:  var(--aqua-400);
+      --accent-press:  var(--aqua-600);
+      --accent-soft:   rgba(20, 200, 184, 0.12);
+      --text:          var(--text-hi);
+      --text-muted:    var(--text-mid);
+      --text-faint:    var(--text-low);
+      --status-online:  var(--leaf-500);
+      --status-running: var(--amber-500);
+      --status-idle:    var(--text-low);
+      --status-offline: var(--clay-500);
+      --focus-ring:    var(--aqua-400);
+
+      /* Typography */
+      --font-display: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif;
+      --font-sans:    'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+      --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+      --fs-display:  56px;
+      --fs-h1:       40px;
+      --fs-h2:       30px;
+      --fs-h3:       22px;
+      --fs-title:    18px;
+      --fs-body:     16px;
+      --fs-sm:       14px;
+      --fs-xs:       12px;
+      --fs-readout:  34px;
+      --fs-mono-sm:  13px;
+      --fw-regular:  400;
+      --fw-medium:   500;
+      --fw-semibold: 600;
+      --fw-bold:     700;
+      --fw-heavy:    800;
+      --lh-tight:    1.05;
+      --lh-snug:     1.2;
+      --lh-normal:   1.45;
+      --lh-relaxed:  1.6;
+      --ls-tight:   -0.02em;
+      --ls-display: -0.03em;
+      --ls-normal:  0;
+      --ls-wide:    0.04em;
+      --ls-caps:    0.12em;
+
+      /* Spacing, radius, sizing (4px grid) */
+      --sp-1:  4px;  --sp-2:  8px;  --sp-3: 12px; --sp-4: 16px;
+      --sp-5: 20px;  --sp-6: 24px;  --sp-8: 32px; --sp-10: 40px;
+      --sp-12: 48px; --sp-16: 64px; --sp-20: 80px;
+      --r-xs:   6px; --r-sm: 10px; --r-md: 14px;
+      --r-lg:  20px; --r-xl: 28px; --r-pill: 999px;
+      --control-h-sm: 36px;
+      --control-h:    44px;
+      --control-h-lg: 56px;
+      --container:    1080px;
+      --container-sm: 440px;
+      --gutter:       var(--sp-6);
+
+      /* Elevation, shadow, focus, motion */
+      --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.40);
+      --shadow-md:  0 6px 20px rgba(0, 0, 0, 0.45);
+      --shadow-lg:  0 18px 48px rgba(0, 0, 0, 0.55);
+      --edge-top:   inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      --glow-aqua:  0 0 0 1px var(--aqua-600), 0 8px 30px var(--aqua-glow);
+      --glow-amber: 0 0 0 1px var(--amber-600), 0 8px 30px var(--amber-glow);
+      --ring:       0 0 0 3px rgba(56, 226, 210, 0.45);
+      --ease:       cubic-bezier(0.22, 0.61, 0.36, 1);
+      --dur-fast:   120ms;
+      --dur:        200ms;
+      --dur-slow:   360ms;
+    }
+
+    /* =====================================================================
+       Base
+       ===================================================================== */
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg-app); color: var(--text); }
+    body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    .hidden { display: none !important; }
+    .bd-ico, .bd-ico-slot { display: inline-flex; align-items: center; }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f5f7f5;
-      color: #1a1a1a;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 2rem 1rem;
+    /* =====================================================================
+       Components (ported from the design system kit, 1:1)
+       ===================================================================== */
+    /* Buttons */
+    .bd-btn { --_bg: var(--accent); --_fg: var(--text-on-aqua); --_bg-hover: var(--accent-hover); --_bg-press: var(--accent-press);
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+      font-family: var(--font-sans); font-weight: var(--fw-bold); font-size: var(--fs-sm); line-height: 1;
+      letter-spacing: var(--ls-tight); height: var(--control-h); padding: 0 var(--sp-5);
+      border: 1px solid transparent; border-radius: var(--r-pill); background: var(--_bg); color: var(--_fg);
+      cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+      transition: background var(--dur) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease); }
+    .bd-btn:hover { background: var(--_bg-hover); }
+    .bd-btn:active { background: var(--_bg-press); transform: scale(0.98); }
+    .bd-btn:focus-visible { outline: none; box-shadow: var(--ring); }
+    .bd-btn[disabled], .bd-btn--disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none !important; transform: none !important; }
+    .bd-btn--primary { box-shadow: 0 6px 22px var(--aqua-glow); }
+    .bd-btn--secondary { --_bg: var(--surface-2); --_fg: var(--text-hi); --_bg-hover: var(--ink-500); --_bg-press: var(--ink-700); border-color: var(--border); }
+    .bd-btn--danger { --_bg: var(--clay-500); --_fg: #fff; --_bg-hover: var(--clay-400); --_bg-press: var(--clay-600); }
+    .bd-btn--sm { height: var(--control-h-sm); padding: 0 var(--sp-4); font-size: var(--fs-xs); }
+    .bd-btn--lg { height: var(--control-h-lg); padding: 0 var(--sp-8); font-size: var(--fs-body); }
+    .bd-btn--block { display: flex; width: 100%; }
+    .bd-btn svg { width: 18px; height: 18px; }
+
+    /* Icon button */
+    .bd-iconbtn { display: inline-flex; align-items: center; justify-content: center; width: var(--control-h); height: var(--control-h);
+      border-radius: var(--r-pill); border: 1px solid transparent; background: var(--surface-2); color: var(--text-mid); cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease); }
+    .bd-iconbtn:hover { background: var(--ink-500); color: var(--text-hi); }
+    .bd-iconbtn:active { transform: scale(0.94); }
+    .bd-iconbtn:focus-visible { outline: none; box-shadow: var(--ring); }
+    .bd-iconbtn--bare { background: transparent; border-color: var(--border); }
+    .bd-iconbtn svg { width: 20px; height: 20px; }
+
+    /* Google button */
+    .bd-google { display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-3); width: 100%; height: var(--control-h-lg);
+      padding: 0 var(--sp-5); border-radius: var(--r-pill); border: 1px solid var(--border-strong); background: #fff; color: #1f1f1f; white-space: nowrap;
+      font-family: var(--font-sans); font-weight: var(--fw-semibold); font-size: var(--fs-body); letter-spacing: var(--ls-tight); cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease); }
+    .bd-google:hover { background: #f6f8f9; box-shadow: var(--shadow-md); }
+    .bd-google:active { transform: scale(0.99); }
+    .bd-google:focus-visible { outline: none; box-shadow: var(--ring); }
+    .bd-google[disabled] { opacity: 0.5; cursor: not-allowed; }
+    .bd-google svg { width: 20px; height: 20px; flex: none; }
+
+    /* Status pill */
+    .bd-pill { display: inline-flex; align-items: center; gap: var(--sp-2); height: 28px; padding: 0 var(--sp-3) 0 var(--sp-2);
+      border-radius: var(--r-pill); font-family: var(--font-sans); font-weight: var(--fw-semibold); font-size: var(--fs-xs); letter-spacing: var(--ls-tight);
+      border: 1px solid var(--_c, var(--border)); background: color-mix(in oklab, var(--_c, var(--text-low)) 14%, transparent); color: var(--_c, var(--text-mid)); white-space: nowrap; }
+    .bd-pill__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--_c, var(--text-low)); }
+    .bd-pill--online { --_c: var(--status-online); }
+    .bd-pill--running { --_c: var(--status-running); }
+    .bd-pill--idle { --_c: var(--status-idle); }
+    .bd-pill--offline { --_c: var(--status-offline); }
+    .bd-pill--running .bd-pill__dot { animation: bd-pulse 1.6s var(--ease) infinite; }
+    @keyframes bd-pulse {
+      0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--_c) 70%, transparent); }
+      70%  { box-shadow: 0 0 0 7px color-mix(in oklab, var(--_c) 0%, transparent); }
+      100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--_c) 0%, transparent); }
     }
 
-    main {
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-    }
+    /* Card */
+    .bd-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--r-lg); box-shadow: var(--shadow-md), var(--edge-top); padding: var(--sp-6);
+      transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+    .bd-card--glow-amber { box-shadow: var(--glow-amber), var(--edge-top); border-color: var(--amber-600); }
+    .bd-card__head { display: flex; align-items: flex-start; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+    .bd-card__head > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .bd-card__eyebrow { display: inline-flex; align-items: center; gap: var(--sp-2); font-family: var(--font-sans); font-weight: var(--fw-bold); font-size: var(--fs-xs); letter-spacing: 0.08em; line-height: 1.1; text-transform: uppercase; color: var(--text-low); white-space: nowrap; }
+    .bd-card__eyebrow svg { width: 15px; height: 15px; }
+    .bd-card__title { font-family: var(--font-display); font-weight: var(--fw-bold); font-size: var(--fs-title); letter-spacing: var(--ls-tight); color: var(--text-hi); }
+    .bd-card__head-aside { margin-left: auto; flex: none; }
 
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
+    /* Readout */
+    .bd-readout { display: flex; flex-direction: column; gap: 5px; }
+    .bd-readout__label { display: inline-flex; align-items: center; gap: var(--sp-2); font-family: var(--font-sans); font-weight: var(--fw-bold); font-size: var(--fs-xs); letter-spacing: 0.06em; line-height: 1.15; text-transform: uppercase; color: var(--text-low); }
+    .bd-readout__label svg { width: 14px; height: 14px; }
+    .bd-readout__value { display: flex; align-items: baseline; gap: var(--sp-2); font-family: var(--font-mono); font-weight: var(--fw-medium); font-size: var(--fs-readout); line-height: var(--lh-tight); letter-spacing: var(--ls-tight); color: var(--_tone, var(--text-hi)); font-variant-numeric: tabular-nums; }
+    .bd-readout__unit { font-family: var(--font-mono); font-size: var(--fs-body); font-weight: var(--fw-regular); color: var(--text-low); }
+    .bd-readout--leaf  { --_tone: var(--leaf-400); }
+    .bd-readout--amber { --_tone: var(--amber-400); }
+    .bd-readout--aqua  { --_tone: var(--aqua-400); }
+    .bd-readout--clay  { --_tone: var(--clay-400); }
+    .bd-readout--sm .bd-readout__value { font-size: var(--fs-h3); }
 
-    .subtitle {
-      color: #666;
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-    }
+    /* Log row */
+    .bd-logrow { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) 0; border-bottom: 1px solid var(--border-soft); }
+    .bd-logrow:last-child { border-bottom: none; }
+    .bd-logrow__icon { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex: none; border-radius: var(--r-sm);
+      background: color-mix(in oklab, var(--_c, var(--text-low)) 16%, transparent); color: var(--_c, var(--text-mid)); }
+    .bd-logrow__icon svg { width: 17px; height: 17px; }
+    .bd-logrow--watered { --_c: var(--aqua-400); }
+    .bd-logrow--manual  { --_c: var(--leaf-400); }
+    .bd-logrow--stopped { --_c: var(--clay-400); }
+    .bd-logrow--skipped { --_c: var(--amber-400); }
+    .bd-logrow__body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .bd-logrow__title { font-family: var(--font-sans); font-weight: var(--fw-semibold); font-size: var(--fs-sm); color: var(--text-hi); }
+    .bd-logrow__meta { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-low); letter-spacing: var(--ls-tight); }
+    .bd-logrow__aside { margin-left: auto; text-align: right; flex: none; }
+    .bd-logrow__dur { font-family: var(--font-mono); font-size: var(--fs-mono-sm); font-weight: var(--fw-medium); color: var(--text-mid); font-variant-numeric: tabular-nums; }
 
-    button {
-      display: block;
-      width: 100%;
-      padding: 1rem;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
+    /* Avatar */
+    .bd-avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden; flex: none; background: var(--surface-2); color: var(--aqua-300); font-family: var(--font-display); font-weight: var(--fw-bold); letter-spacing: var(--ls-tight); border: 1px solid var(--border); user-select: none; }
+    .bd-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .bd-avatar--md { width: 40px; height: 40px; font-size: 15px; }
 
-    button:active { opacity: 0.8; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* =====================================================================
+       Screens (ported from the design system kit, 1:1)
+       ===================================================================== */
+    .bd-app { min-height: 100vh; background: var(--bg-app); position: relative; }
+    .bd-glow { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(130% 55% at 50% -12%, rgba(20,200,184,0.16), transparent 60%); }
+    .bd-app > * { position: relative; z-index: 1; }
 
-    #sign-in-btn {
-      background: #fff;
-      color: #333;
-      border: 2px solid #ddd;
-      margin-bottom: 1rem;
-    }
+    /* App bar */
+    .bd-appbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+      height: 72px; padding: 0 28px; border-bottom: 1px solid var(--border-soft);
+      background: color-mix(in oklab, var(--ink-900) 82%, transparent); backdrop-filter: blur(12px); }
+    .bd-brand { display: flex; align-items: center; gap: 11px; }
+    .bd-brand img { width: 32px; height: 32px; display: block; }
+    .bd-wordmark { font-family: var(--font-display); font-weight: 800; font-size: 23px; letter-spacing: var(--ls-display); color: var(--text-hi); white-space: nowrap; }
+    .bd-wm-lead { color: var(--text-hi); }
+    .bd-wm-drip { color: var(--aqua-400); }
+    .bd-appbar__right { display: flex; align-items: center; gap: 12px; }
 
-    #water-btn {
-      background: #2e7d32;
-      color: #fff;
-      padding: 1.5rem;
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
-    }
+    /* Login */
+    .bd-login { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .bd-login__card { width: 100%; max-width: var(--container-sm); background: var(--surface);
+      border: 1px solid var(--border-soft); border-radius: var(--r-xl); box-shadow: var(--shadow-lg), var(--edge-top);
+      padding: 40px 34px; text-align: center; }
+    .bd-login__logo { width: 66px; height: 66px; margin: 0 auto 18px; display: block; }
+    .bd-login__card h1 { font-family: var(--font-display); font-weight: 800; font-size: 38px; letter-spacing: var(--ls-display); color: var(--text-hi); margin: 0; white-space: nowrap; }
+    .bd-login__sub { color: var(--text-mid); font-family: var(--font-sans); font-size: 16px; margin: 8px 0 28px; }
+    .bd-login__error { color: var(--clay-400); font-family: var(--font-sans); font-size: 13px; margin-top: 14px; min-height: 1em; }
+    .bd-login__safety { display: flex; gap: 9px; align-items: flex-start; text-align: left; margin-top: 24px; padding-top: 18px;
+      border-top: 1px solid var(--border-soft); color: var(--text-low); font-size: 13px; line-height: 1.45; font-family: var(--font-sans); }
+    .bd-login__safety .bd-ico, .bd-login__safety svg { color: var(--leaf-400); margin-top: 1px; flex: none; width: 16px; height: 16px; }
 
-    #sign-out-btn {
-      background: transparent;
-      color: #888;
-      font-size: 0.85rem;
-      padding: 0.5rem;
-    }
+    /* Dashboard */
+    .bd-dash__main { max-width: var(--container); margin: 0 auto; padding: 28px; }
+    .bd-dash__grid { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+    .bd-dash__col { display: flex; flex-direction: column; gap: 20px; }
+    @media (max-width: 880px) { .bd-dash__grid { grid-template-columns: 1fr; } }
 
-    .user-info {
-      color: #666;
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-    }
+    /* Pump control */
+    .bd-pump { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .bd-pump__readout .bd-readout__value { font-size: 46px; }
+    .bd-pump__sub { margin: 10px 0 0; color: var(--text-mid); font-size: 14px; font-family: var(--font-sans); max-width: 340px; }
+    .bd-pump__bar { margin-top: 22px; height: 8px; border-radius: var(--r-pill); background: var(--ink-600); overflow: hidden; }
+    .bd-pump__bar-fill { height: 100%; width: 0; background: var(--amber-500); border-radius: var(--r-pill); transition: width 1s linear; }
 
-    #status {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      color: #555;
-      min-height: 1.5em;
-    }
+    /* Device info */
+    .bd-device { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .bd-device__meta { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; padding-top: 14px;
+      border-top: 1px solid var(--border-soft); font-family: var(--font-mono); font-size: 12px; color: var(--text-low); }
+    .bd-device__meta span { display: inline-flex; align-items: center; gap: 6px; }
+    .bd-device__meta svg { width: 13px; height: 13px; }
+    .bd-device__lastseen { color: var(--clay-400); }
+    @media (max-width: 520px) { .bd-device { grid-template-columns: 1fr; } }
 
-    #auth-error {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #c62828;
-    }
+    /* History */
+    .bd-history__list { display: flex; flex-direction: column; }
+    .bd-history__more { margin-top: var(--sp-3); padding-top: var(--sp-4); border-top: 1px solid var(--border-soft);
+      display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+    .bd-history__count { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-low); letter-spacing: var(--ls-tight); }
+    .bd-history__empty { padding: var(--sp-5) 0; text-align: center; color: var(--text-low); font-family: var(--font-sans); font-size: var(--fs-sm); }
 
-    .hidden { display: none; }
-
-    /* ---- Status card ---- */
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.2rem;
-      margin-top: 1.5rem;
-      text-align: left;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    .card h2 {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #888;
-      margin-bottom: 0.8rem;
-    }
-
-    .pump-status {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .dot.idle { background: #aaa; }
-    .dot.running { background: #2e7d32; animation: pulse 1.5s infinite; }
-    .dot.offline { background: #c62828; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    .device-info {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem;
-      margin-top: 0.8rem;
-      font-size: 0.85rem;
-      color: #666;
-    }
-
-    .device-info dt { color: #999; }
-    .device-info dd { font-weight: 500; }
-
-    /* ---- History ---- */
-    .history-list {
-      list-style: none;
-      margin-top: 0.5rem;
-    }
-
-    .history-list li {
-      padding: 0.6rem 0;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 0.85rem;
-      color: #555;
-    }
-
-    .history-list li:last-child { border-bottom: none; }
-
-    .history-time {
-      font-weight: 600;
-      color: #333;
-    }
-
-    .history-detail {
-      color: #888;
-      font-size: 0.8rem;
-    }
-
-    .empty-history {
-      color: #aaa;
-      font-size: 0.85rem;
-      font-style: italic;
-      padding: 0.5rem 0;
+    @media (prefers-reduced-motion: reduce) {
+      .bd-btn, .bd-iconbtn, .bd-google, .bd-card, .bd-pump__bar-fill { transition: none; }
+      .bd-pill--running .bd-pill__dot { animation: none; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Big Drippa</h1>
-    <p class="subtitle">Drip Irrigation Controller</p>
-
-    <div id="auth-section">
-      <button id="sign-in-btn">Sign in with Google</button>
-      <p id="auth-error"></p>
+  <!-- ===================== Login ===================== -->
+  <div id="login-screen" class="bd-login">
+    <div class="bd-glow"></div>
+    <div class="bd-login__card">
+      <img class="bd-login__logo" src="assets/logo-drop.svg" alt="Big Drippa" />
+      <h1><span class="bd-wm-lead">Big</span> <span class="bd-wm-drip">Drippa</span></h1>
+      <p class="bd-login__sub">Sign in to water your garden.</p>
+      <button id="sign-in-btn" class="bd-google">
+        <svg viewBox="0 0 18 18" aria-hidden="true">
+          <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.02-3.7H.96v2.34A9 9 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.98 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.02-2.34z"/>
+          <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.94l3.02 2.34C4.68 5.16 6.66 3.58 9 3.58z"/>
+        </svg>
+        <span id="sign-in-label">Continue with Google</span>
+      </button>
+      <p id="auth-error" class="bd-login__error"></p>
+      <div class="bd-login__safety">
+        <i data-lucide="shield-check" class="bd-ico"></i>
+        <span>A hardware timer stops the pump even if the app can&rsquo;t reach it. You can leave for the weekend.</span>
+      </div>
     </div>
+  </div>
 
-    <div id="control-section" class="hidden">
-      <p class="user-info">Signed in as <span id="user-name"></span></p>
-      <button id="water-btn">Water Now</button>
-      <p id="status"></p>
+  <!-- ===================== Dashboard ===================== -->
+  <div id="dashboard" class="bd-app hidden">
+    <div class="bd-glow"></div>
+    <header class="bd-appbar">
+      <div class="bd-brand">
+        <img src="assets/logo-drop.svg" alt="" />
+        <span class="bd-wordmark"><span class="bd-wm-lead">Big</span> <span class="bd-wm-drip">Drippa</span></span>
+      </div>
+      <div class="bd-appbar__right">
+        <span class="bd-pill bd-pill--offline" id="conn-pill"><span class="bd-pill__dot"></span><span id="conn-pill-label">Offline</span></span>
+        <span class="bd-avatar bd-avatar--md" id="avatar"><span id="avatar-initials">&ndash;</span></span>
+        <button class="bd-iconbtn bd-iconbtn--bare" id="sign-out-btn" aria-label="Sign out"><i data-lucide="log-out"></i></button>
+      </div>
+    </header>
 
-      <!-- Pump & device status -->
-      <div class="card">
-        <h2>Pump</h2>
-        <div class="pump-status">
-          <span class="dot idle" id="pump-dot"></span>
-          <span id="pump-label">Idle</span>
+    <main class="bd-dash__main">
+      <div class="bd-dash__grid">
+        <div class="bd-dash__col">
+
+          <!-- Pump control -->
+          <section class="bd-card" id="pump-card">
+            <header class="bd-card__head">
+              <div>
+                <div class="bd-card__eyebrow"><i data-lucide="droplets"></i> Live status</div>
+                <div class="bd-card__title">Pump</div>
+              </div>
+              <div class="bd-card__head-aside">
+                <span class="bd-pill bd-pill--idle" id="pump-pill"><span class="bd-pill__dot"></span><span id="pump-pill-label">Idle</span></span>
+              </div>
+            </header>
+            <div class="bd-pump">
+              <div class="bd-pump__readout">
+                <div class="bd-readout" id="pump-readout">
+                  <span class="bd-readout__value" id="pump-value">Idle</span>
+                </div>
+                <p class="bd-pump__sub" id="pump-sub">Connecting&hellip;</p>
+              </div>
+              <div class="bd-pump__action">
+                <button class="bd-btn bd-btn--primary bd-btn--lg" id="start-btn"><i data-lucide="droplet"></i><span>Start watering</span></button>
+                <button class="bd-btn bd-btn--danger bd-btn--lg hidden" id="stop-btn"><i data-lucide="square"></i><span>Stop pump</span></button>
+              </div>
+            </div>
+            <div class="bd-pump__bar"><div class="bd-pump__bar-fill" id="pump-bar-fill"></div></div>
+          </section>
+
+          <!-- ESP32 controller -->
+          <section class="bd-card" id="device-card">
+            <header class="bd-card__head">
+              <div>
+                <div class="bd-card__eyebrow"><i data-lucide="cpu"></i> Controller</div>
+                <div class="bd-card__title">ESP32</div>
+              </div>
+              <div class="bd-card__head-aside">
+                <span class="bd-pill bd-pill--offline" id="device-pill"><span class="bd-pill__dot"></span><span id="device-pill-label">Offline</span></span>
+              </div>
+            </header>
+            <div class="bd-device">
+              <div class="bd-readout bd-readout--sm" id="conn-readout">
+                <span class="bd-readout__label"><span class="bd-ico-slot" id="conn-icon-slot"></span> Connection</span>
+                <span class="bd-readout__value" id="conn-value">&mdash;</span>
+              </div>
+              <div class="bd-readout bd-readout--sm">
+                <span class="bd-readout__label"><i data-lucide="clock"></i> Uptime</span>
+                <span class="bd-readout__value" id="uptime-value">&mdash;</span>
+              </div>
+              <div class="bd-readout bd-readout--sm" id="wifi-readout">
+                <span class="bd-readout__label"><i data-lucide="radio"></i> WiFi signal</span>
+                <span class="bd-readout__value" id="wifi-value">&mdash;</span>
+              </div>
+            </div>
+            <div class="bd-device__meta">
+              <span><i data-lucide="hash"></i> <span id="device-id">esp32-balcony-01</span></span>
+              <span class="bd-device__lastseen hidden" id="device-lastseen">Last seen &mdash;</span>
+            </div>
+          </section>
+
         </div>
-        <dl class="device-info">
-          <dt>Device</dt>
-          <dd id="device-online">--</dd>
-          <dt>Uptime</dt>
-          <dd id="device-uptime">--</dd>
-          <dt>WiFi</dt>
-          <dd id="device-wifi">--</dd>
-          <dt>Last seen</dt>
-          <dd id="device-lastseen">--</dd>
-        </dl>
-      </div>
 
-      <!-- History -->
-      <div class="card">
-        <h2>History</h2>
-        <ul class="history-list" id="history-list">
-          <li class="empty-history">No watering events yet</li>
-        </ul>
-      </div>
+        <!-- Watering history -->
+        <section class="bd-card" id="history-card">
+          <header class="bd-card__head">
+            <div>
+              <div class="bd-card__eyebrow"><i data-lucide="history"></i> Watering history</div>
+              <div class="bd-card__title">Recent cycles</div>
+            </div>
+          </header>
+          <div id="history-body">
+            <div class="bd-history__empty">No cycles logged yet.</div>
+          </div>
+        </section>
 
-      <button id="sign-out-btn">Sign out</button>
-    </div>
-  </main>
+      </div>
+    </main>
+  </div>
 
   <script type="module">
+    /* =====================================================================
+       Big Drippa — web app logic (wired to real Firebase data)
+       ===================================================================== */
     const firebaseConfig = {
       apiKey:        "AIzaSyBxdyoO7Wbmsk5-G6Suqxgwju3EsHhHkxM",
       authDomain:    "big-drippa.firebaseapp.com",
       databaseURL:   "https://big-drippa-default-rtdb.europe-west1.firebasedatabase.app/",
       projectId:     "big-drippa",
     };
+
+    // --- Tunables -------------------------------------------------------
+    // Expected pump run length, used only for the live count-up's progress
+    // bar + "/ N s" readout. The pump is actually stopped by the firmware's
+    // MAX_PUMP_ON_SECONDS safety cap (and the MOS hardware timer). When you
+    // tune the run length in irrigation/config.h, update THIS value to match.
+    const WATERING_DURATION_SECONDS = 15;
+    const DEVICE_ID       = "esp32-balcony-01"; // firmware publishes none; static label
+    const STALE_AFTER_SEC = 10;   // /status older than this => controller offline (ESP32 writes every ~3s)
+    const COMMAND_COOLDOWN_MS = 5000;
+    const HISTORY_LIMIT   = 20;
+    const HISTORY_PAGE_SIZE = 4;
 
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js");
     const { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } =
@@ -244,142 +473,327 @@
     const db   = getDatabase(app);
     const provider = new GoogleAuthProvider();
 
-    // ---- DOM ----
-    const authSection    = document.getElementById("auth-section");
-    const controlSection = document.getElementById("control-section");
-    const userName       = document.getElementById("user-name");
-    const waterBtn       = document.getElementById("water-btn");
-    const statusEl       = document.getElementById("status");
-    const signInBtn      = document.getElementById("sign-in-btn");
-    const signOutBtn     = document.getElementById("sign-out-btn");
-    const authError      = document.getElementById("auth-error");
-    const pumpDot        = document.getElementById("pump-dot");
-    const pumpLabel      = document.getElementById("pump-label");
-    const deviceOnline   = document.getElementById("device-online");
-    const deviceUptime   = document.getElementById("device-uptime");
-    const deviceWifi     = document.getElementById("device-wifi");
-    const deviceLastseen = document.getElementById("device-lastseen");
-    const historyList    = document.getElementById("history-list");
+    // --- DOM ------------------------------------------------------------
+    const $ = (id) => document.getElementById(id);
+    const loginScreen  = $("login-screen");
+    const dashboard    = $("dashboard");
+    const signInBtn    = $("sign-in-btn");
+    const signInLabel  = $("sign-in-label");
+    const signOutBtn   = $("sign-out-btn");
+    const authError    = $("auth-error");
+    const avatar       = $("avatar");
+    const connPill     = $("conn-pill");
+    const connPillLabel= $("conn-pill-label");
 
-    // ---- Helpers ----
+    const pumpCard     = $("pump-card");
+    const pumpPill     = $("pump-pill");
+    const pumpPillLabel= $("pump-pill-label");
+    const pumpReadout  = $("pump-readout");
+    const pumpValue    = $("pump-value");
+    const pumpSub      = $("pump-sub");
+    const startBtn     = $("start-btn");
+    const stopBtn      = $("stop-btn");
+    const pumpBarFill  = $("pump-bar-fill");
+
+    const devicePill     = $("device-pill");
+    const devicePillLabel= $("device-pill-label");
+    const connReadout    = $("conn-readout");
+    const connIconSlot   = $("conn-icon-slot");
+    const connValue      = $("conn-value");
+    const uptimeValue    = $("uptime-value");
+    const wifiReadout    = $("wifi-readout");
+    const wifiValue      = $("wifi-value");
+    const deviceIdEl     = $("device-id");
+    const deviceLastseen = $("device-lastseen");
+
+    const historyBody  = $("history-body");
+
+    // --- Icons (Lucide) -------------------------------------------------
+    function renderIcons(root) { if (window.lucide) window.lucide.createIcons(root ? { root } : undefined); }
+    function setSlotIcon(slot, name) { slot.innerHTML = `<i data-lucide="${name}"></i>`; renderIcons(slot); }
+    renderIcons(); // render all static icons present at load
+
+    // --- Helpers --------------------------------------------------------
+    const pad = (n) => String(n).padStart(2, "0");
+
+    function setPill(pillEl, labelEl, status, label) {
+      pillEl.className = `bd-pill bd-pill--${status}`;
+      labelEl.textContent = label;
+    }
+    function setDisabled(btn, disabled) {
+      btn.disabled = disabled;
+      btn.classList.toggle("bd-btn--disabled", disabled);
+    }
+    function initials(name) {
+      return (name || "").trim().split(/\s+/).slice(0, 2).map((w) => w[0] || "").join("").toUpperCase() || "–";
+    }
+
     function formatUptime(ms) {
       const s = Math.floor(ms / 1000);
       const d = Math.floor(s / 86400);
       const h = Math.floor((s % 86400) / 3600);
       const m = Math.floor((s % 3600) / 60);
-      if (d > 0) return d + "d " + h + "h";
-      if (h > 0) return h + "h " + m + "m";
-      return m + "m " + (s % 60) + "s";
+      const sec = s % 60;
+      if (d > 0) return `${d}d ${pad(h)}:${pad(m)}`;
+      return `${pad(h)}:${pad(m)}:${pad(sec)}`;
     }
 
-    function formatTime(epoch) {
-      if (!epoch) return "--";
-      const d = new Date(epoch * 1000);
-      return d.toLocaleString();
+    function relativeTime(epochS) {
+      if (!epochS) return "—";
+      const diff = Math.max(0, Math.floor(Date.now() / 1000) - epochS);
+      if (diff < 45) return "just now";
+      const m = Math.floor(diff / 60);
+      if (m < 60) return `${Math.max(1, m)} min ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
+      const d = Math.floor(h / 24);
+      return `${d} day${d > 1 ? "s" : ""} ago`;
     }
 
-    function wifiLabel(rssi) {
-      if (rssi >= -50) return rssi + " dBm (excellent)";
-      if (rssi >= -60) return rssi + " dBm (good)";
-      if (rssi >= -70) return rssi + " dBm (fair)";
-      return rssi + " dBm (weak)";
+    function formatHistoryTime(epochS) {
+      if (!epochS) return "";
+      const d = new Date(epochS * 1000);
+      const now = new Date();
+      const hhmm = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const startOfDay = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+      const dayDiff = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
+      if (dayDiff === 0) return `Today · ${hhmm}`;
+      if (dayDiff === 1) return `Yesterday · ${hhmm}`;
+      if (dayDiff > 1 && dayDiff < 7) {
+        const wd = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+        return `${wd} · ${hhmm}`;
+      }
+      return `${d.toLocaleDateString()} · ${hhmm}`;
     }
 
-    // ---- Listeners (activated after sign-in) ----
-    let unsubStatus = null;
-    let unsubHistory = null;
+    // Map a raw /history entry -> design log-row kind/icon/title.
+    function mapHistory(entry) {
+      const reason = String(entry.stoppedReason || "").toLowerCase();
+      const trigger = String(entry.trigger || "").toLowerCase();
+      let kind, icon, title;
+      if (reason.includes("manual") || reason.includes("stop")) {
+        kind = "stopped"; icon = "square"; title = "Stopped early";
+      } else if (trigger.startsWith("schedul")) {
+        kind = "watered"; icon = "droplet"; title = "Scheduled cycle";
+      } else {
+        kind = "manual"; icon = "play"; title = "Manual watering";
+      }
+      return {
+        kind, icon, title,
+        time: formatHistoryTime(entry.startedAt),
+        duration: (entry.durationSec != null) ? `${entry.durationSec} s` : null,
+      };
+    }
 
+    // --- State ----------------------------------------------------------
+    let lastStatus = null;
+    let runningSince = null;            // ms when we first observed the pump running
+    let latestHistoryStartedAt = null;  // for "last watered"
+    let allEvents = [];
+    let visibleCount = HISTORY_PAGE_SIZE;
+    let commandCooldownUntil = 0;
+    let prevConnIcon = null;
+
+    let unsubStatus = null, unsubHistory = null, tickId = null;
+
+    function isOnline(status) {
+      if (!status || !status.lastUpdated) return false;
+      return (Math.floor(Date.now() / 1000) - status.lastUpdated) <= STALE_AFTER_SEC;
+    }
+
+    function renderPumpAndDevice() {
+      const status = lastStatus;
+      const online = isOnline(status);
+      const running = online && !!(status && status.pumpRunning);
+      const cooling = Date.now() < commandCooldownUntil;
+
+      // track running start for the count-up
+      if (running) { if (runningSince == null) runningSince = Date.now(); }
+      else { runningSince = null; }
+
+      // ---- Pump card ----
+      pumpCard.classList.toggle("bd-card--glow-amber", running);
+      if (running)      setPill(pumpPill, pumpPillLabel, "running", "Watering");
+      else if (online)  setPill(pumpPill, pumpPillLabel, "idle", "Idle");
+      else              setPill(pumpPill, pumpPillLabel, "offline", "Offline");
+
+      if (running) {
+        const elapsed = Math.floor((Date.now() - runningSince) / 1000);
+        pumpReadout.className = "bd-readout bd-readout--amber";
+        pumpValue.innerHTML = `${elapsed}<span class="bd-readout__unit">/ ${WATERING_DURATION_SECONDS} s</span>`;
+        pumpSub.textContent = "Watering now. Tap Stop to end the cycle early.";
+        pumpBarFill.style.width = Math.min(100, (elapsed / WATERING_DURATION_SECONDS) * 100) + "%";
+      } else if (online) {
+        pumpReadout.className = "bd-readout";
+        pumpValue.textContent = "Idle";
+        pumpSub.textContent = latestHistoryStartedAt
+          ? `Last watered ${relativeTime(latestHistoryStartedAt)}.`
+          : "No cycles logged yet.";
+        pumpBarFill.style.width = "0%";
+      } else {
+        pumpReadout.className = "bd-readout bd-readout--clay";
+        pumpValue.textContent = "Offline";
+        pumpSub.textContent = "Controller offline — can’t start a cycle.";
+        pumpBarFill.style.width = "0%";
+      }
+
+      startBtn.classList.toggle("hidden", running);
+      stopBtn.classList.toggle("hidden", !running);
+      setDisabled(startBtn, !online || cooling);
+      setDisabled(stopBtn, cooling);
+
+      // ---- Controller (ESP32) card + app-bar pill ----
+      const connStatus = online ? "online" : "offline";
+      setPill(devicePill, devicePillLabel, connStatus, online ? "Online" : "Offline");
+      setPill(connPill, connPillLabel, connStatus, online ? "Online" : "Offline");
+
+      connReadout.className = "bd-readout bd-readout--sm " + (online ? "bd-readout--leaf" : "bd-readout--clay");
+      connValue.textContent = online ? "Online" : "Offline";
+      const wantIcon = online ? "wifi" : "wifi-off";
+      if (prevConnIcon !== wantIcon) { setSlotIcon(connIconSlot, wantIcon); prevConnIcon = wantIcon; }
+
+      uptimeValue.textContent = (online && status && status.uptimeMs) ? formatUptime(status.uptimeMs) : "—";
+
+      if (online && status && status.wifiRSSI != null) {
+        wifiReadout.className = "bd-readout bd-readout--sm bd-readout--leaf";
+        wifiValue.innerHTML = `${status.wifiRSSI}<span class="bd-readout__unit">dBm</span>`;
+      } else {
+        wifiReadout.className = "bd-readout bd-readout--sm";
+        wifiValue.textContent = "—";
+      }
+
+      deviceIdEl.textContent = DEVICE_ID;
+      if (online) {
+        deviceLastseen.classList.add("hidden");
+      } else {
+        deviceLastseen.classList.remove("hidden");
+        deviceLastseen.textContent = "Last seen " + (status && status.lastUpdated ? relativeTime(status.lastUpdated) : "—");
+      }
+    }
+
+    function renderHistory() {
+      if (allEvents.length === 0) {
+        historyBody.innerHTML = '<div class="bd-history__empty">No cycles logged yet.</div>';
+        return;
+      }
+      const shown = allEvents.slice(0, visibleCount);
+      const remaining = allEvents.length - shown.length;
+
+      let html = '<div class="bd-history__list">';
+      html += shown.map((e) => `
+        <div class="bd-logrow bd-logrow--${e.kind}">
+          <span class="bd-logrow__icon"><i data-lucide="${e.icon}"></i></span>
+          <div class="bd-logrow__body">
+            <span class="bd-logrow__title">${e.title}</span>
+            ${e.time ? `<span class="bd-logrow__meta">${e.time}</span>` : ""}
+          </div>
+          ${e.duration ? `<div class="bd-logrow__aside"><span class="bd-logrow__dur">${e.duration}</span></div>` : ""}
+        </div>`).join("");
+      html += "</div>";
+
+      if (remaining > 0) {
+        const next = Math.min(remaining, HISTORY_PAGE_SIZE);
+        html += `<div class="bd-history__more">
+          <button class="bd-btn bd-btn--secondary bd-btn--sm bd-btn--block" id="load-more-btn"><i data-lucide="chevron-down"></i><span>Load ${next} more</span></button>
+          <span class="bd-history__count">Showing ${shown.length} of ${allEvents.length}</span>
+        </div>`;
+      }
+
+      historyBody.innerHTML = html;
+      const lm = $("load-more-btn");
+      if (lm) lm.addEventListener("click", () => {
+        visibleCount = Math.min(visibleCount + HISTORY_PAGE_SIZE, allEvents.length);
+        renderHistory();
+      });
+      renderIcons(historyBody);
+    }
+
+    // --- Listeners ------------------------------------------------------
     function startListeners() {
-      // Status
       unsubStatus = onValue(ref(db, "/status"), (snap) => {
-        const data = snap.val();
-        if (!data) return;
-
-        // Pump state
-        if (data.pumpRunning) {
-          pumpDot.className = "dot running";
-          pumpLabel.textContent = "Running";
-        } else {
-          pumpDot.className = "dot idle";
-          pumpLabel.textContent = "Idle";
-        }
-
-        // Online/offline (stale if lastUpdated > 10s ago)
-        const nowSec = Math.floor(Date.now() / 1000);
-        const staleSec = nowSec - (data.lastUpdated || 0);
-        if (staleSec > 10) {
-          deviceOnline.textContent = "Offline";
-          pumpDot.className = "dot offline";
-          pumpLabel.textContent = "Offline";
-        } else {
-          deviceOnline.textContent = "Online";
-        }
-
-        deviceUptime.textContent = data.uptimeMs ? formatUptime(data.uptimeMs) : "--";
-        deviceWifi.textContent = data.wifiRSSI ? wifiLabel(data.wifiRSSI) : "--";
-        deviceLastseen.textContent = data.lastUpdated ? formatTime(data.lastUpdated) : "--";
+        lastStatus = snap.val();
+        renderPumpAndDevice();
       });
 
-      // History (last 10 entries)
-      const historyQuery = query(ref(db, "/history"), orderByKey(), limitToLast(10));
+      const historyQuery = query(ref(db, "/history"), orderByKey(), limitToLast(HISTORY_LIMIT));
       unsubHistory = onValue(historyQuery, (snap) => {
         const data = snap.val();
-        if (!data) {
-          historyList.innerHTML = '<li class="empty-history">No watering events yet</li>';
-          return;
-        }
-
-        const entries = Object.entries(data).sort((a, b) => b[0] - a[0]);
-        historyList.innerHTML = entries.map(([key, e]) => {
-          const time = formatTime(e.startedAt);
-          return `<li>
-            <span class="history-time">${time}</span><br>
-            <span class="history-detail">${e.durationSec}s &middot; ${e.trigger} &middot; ${e.stoppedReason}</span>
-          </li>`;
-        }).join("");
+        const entries = data ? Object.entries(data).sort((a, b) => Number(b[0]) - Number(a[0])) : [];
+        const prevLen = allEvents.length;
+        allEvents = entries.map(([, e]) => mapHistory(e));
+        latestHistoryStartedAt = entries.length ? entries[0][1].startedAt : null;
+        if (allEvents.length > prevLen) visibleCount = HISTORY_PAGE_SIZE; // snap to first page when a new cycle runs
+        visibleCount = Math.min(visibleCount, Math.max(HISTORY_PAGE_SIZE, allEvents.length));
+        renderHistory();
+        renderPumpAndDevice(); // refresh "last watered"
       });
+
+      // Re-evaluate online/offline + advance the count-up every second, even
+      // when no new /status snapshot arrives (a real dropout stops updates).
+      tickId = setInterval(renderPumpAndDevice, 1000);
+      renderPumpAndDevice();
     }
 
     function stopListeners() {
-      if (unsubStatus) { unsubStatus(); unsubStatus = null; }
+      if (unsubStatus)  { unsubStatus();  unsubStatus = null; }
       if (unsubHistory) { unsubHistory(); unsubHistory = null; }
+      if (tickId)       { clearInterval(tickId); tickId = null; }
+      lastStatus = null; runningSince = null; latestHistoryStartedAt = null;
+      allEvents = []; visibleCount = HISTORY_PAGE_SIZE; prevConnIcon = null;
     }
 
-    // ---- Auth state ----
+    // --- Auth -----------------------------------------------------------
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        authSection.classList.add("hidden");
-        controlSection.classList.remove("hidden");
-        userName.textContent = user.displayName || user.email;
-        statusEl.textContent = "";
+        loginScreen.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+        if (user.photoURL) {
+          avatar.innerHTML = `<img src="${user.photoURL}" alt="${user.displayName || "Account"}" referrerpolicy="no-referrer" />`;
+        } else {
+          avatar.innerHTML = `<span>${initials(user.displayName || user.email)}</span>`;
+        }
         startListeners();
       } else {
-        authSection.classList.remove("hidden");
-        controlSection.classList.add("hidden");
+        dashboard.classList.add("hidden");
+        loginScreen.classList.remove("hidden");
         stopListeners();
       }
     });
 
     signInBtn.addEventListener("click", () => {
       authError.textContent = "";
-      signInWithPopup(auth, provider).catch((err) => {
-        authError.textContent = "Sign-in failed: " + err.message;
-      });
+      signInLabel.textContent = "Signing in…";
+      signInBtn.disabled = true;
+      signInWithPopup(auth, provider)
+        .catch((err) => { authError.textContent = "Sign-in failed: " + err.message; })
+        .finally(() => { signInLabel.textContent = "Continue with Google"; signInBtn.disabled = false; });
     });
 
     signOutBtn.addEventListener("click", () => signOut(auth));
 
-    // ---- Water Now ----
-    waterBtn.addEventListener("click", async () => {
-      waterBtn.disabled = true;
-      statusEl.textContent = "Sending command...";
+    // --- Commands -------------------------------------------------------
+    startBtn.addEventListener("click", async () => {
+      commandCooldownUntil = Date.now() + COMMAND_COOLDOWN_MS;
+      renderPumpAndDevice();
       try {
         await set(ref(db, "/commands/manualRun"), true);
-        statusEl.textContent = "Command sent! Pump should start within a few seconds.";
       } catch (err) {
-        statusEl.textContent = "Error: " + err.message;
+        pumpSub.textContent = "Error: " + err.message;
+        commandCooldownUntil = 0;
+        renderPumpAndDevice();
       }
-      setTimeout(() => { waterBtn.disabled = false; }, 5000);
+    });
+
+    stopBtn.addEventListener("click", async () => {
+      commandCooldownUntil = Date.now() + COMMAND_COOLDOWN_MS;
+      renderPumpAndDevice();
+      try {
+        await set(ref(db, "/commands/stop"), true);
+      } catch (err) {
+        pumpSub.textContent = "Error: " + err.message;
+        commandCooldownUntil = 0;
+        renderPumpAndDevice();
+      }
     });
   </script>
 </body>

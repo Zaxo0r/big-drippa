@@ -192,6 +192,22 @@ void syncFirebase() {
     }
   }
 
+  // Poll for stop command (remote "Stop pump" from the web app)
+  bool stopCmd = Database.get<bool>(aClient, "/commands/stop");
+
+  if (aClient.lastError().code() != 0) return;
+
+  if (stopCmd) {
+    Serial.println("[firebase] Stop command received");
+    Database.set<bool>(aClient, "/commands/stop", false);
+
+    if (pumpRunning) {
+      stopPump("manual-stop");
+    } else {
+      Serial.println("[firebase] Pump not running — nothing to stop");
+    }
+  }
+
   // Write device status
   writeStatus();
 }

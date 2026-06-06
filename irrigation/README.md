@@ -84,7 +84,7 @@ Copy `secrets.h.example` → `secrets.h` and fill in your WiFi and Firebase cred
 
 | Feature | Status |
 |---|---|
-| Watering | Manual trigger via Firebase `/commands` |
+| Watering | Manual start/stop via Firebase `/commands` (`manualRun`, `stop`) |
 | Network | WiFi |
 | Cloud | Firebase RTDB, Google Sign-In |
 | Updates | USB flashing |

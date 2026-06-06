@@ -1,0 +1,15 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Big Drippa">
+  <defs>
+    <linearGradient id="dripFill" x1="32" y1="8" x2="32" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38E2D2"></stop>
+      <stop offset="1" stop-color="#14C8B8"></stop>
+    </linearGradient>
+  </defs>
+
+  <path d="M32 6 C32 6 14 27 14 40 a18 18 0 0 0 36 0 C50 27 32 6 32 6 Z" fill="url(#dripFill)"></path>
+
+  <path d="M25 34 C22 38 21.5 43 23.5 47" stroke="#C6FBF3" stroke-width="3.2" stroke-linecap="round" opacity="0.85"></path>
+
+  <path d="M32 24 C32 17 36.5 12.5 43 11 C43 17.5 39 23 32 24 Z" fill="#3FAE63"></path>
+  <path d="M32 24 C32 18.5 29 14.5 24 13.5 C24 18.8 27 23 32 24 Z" fill="#2C8A4E"></path>
+</svg>

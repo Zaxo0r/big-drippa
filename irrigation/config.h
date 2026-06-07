@@ -26,7 +26,7 @@
 // This also acts as the effective per-cycle run length. If you tune it, update
 // WATERING_DURATION_SECONDS in web/index.html so the web app's live count-up /
 // progress bar still matches.
-#define MAX_PUMP_ON_SECONDS        15
+#define MAX_PUMP_ON_SECONDS        120
 
 // ---- Firebase polling -------------------------------------------------------
 // How often the ESP32 checks Firebase RTDB for a manual-run command.

@@ -455,7 +455,7 @@
     // bar + "/ N s" readout. The pump is actually stopped by the firmware's
     // MAX_PUMP_ON_SECONDS safety cap (and the MOS hardware timer). When you
     // tune the run length in irrigation/config.h, update THIS value to match.
-    const WATERING_DURATION_SECONDS = 15;
+    const WATERING_DURATION_SECONDS = 120;
     const DEVICE_ID       = "esp32-balcony-01"; // firmware publishes none; static label
     const STALE_AFTER_SEC = 10;   // /status older than this => controller offline (ESP32 writes every ~3s)
     const COMMAND_COOLDOWN_MS = 5000;

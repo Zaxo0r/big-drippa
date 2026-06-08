@@ -38,6 +38,10 @@ static RealtimeDatabase  Database;
 static bool              firebaseReady      = false;
 static unsigned long     lastFirebasePollMs = 0;
 
+// ---- WiFi connectivity ------------------------------------------------------
+static unsigned long     offlineSinceMs     = 0;  // 0 = currently online
+static unsigned long     lastWifiAttemptMs  = 0;
+
 // ---- Time -------------------------------------------------------------------
 static bool timeReady = false;
 
@@ -110,9 +114,30 @@ void stopPump(const char *reason) {
 }
 
 // ---- WiFi -------------------------------------------------------------------
+// Logs link transitions. The disconnect reason code is the key diagnostic if
+// connectivity ever drops again — it tells us *why* the AP let go of us.
+void onWifiEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
+  switch (event) {
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
+      Serial.printf("[wifi] Got IP: %s (RSSI %d)\n",
+                    WiFi.localIP().toString().c_str(), WiFi.RSSI());
+      break;
+    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
+      Serial.printf("[wifi] Disconnected (reason %d)\n",
+                    info.wifi_sta_disconnected.reason);
+      break;
+    default:
+      break;
+  }
+}
+
 void connectWiFi() {
   Serial.printf("[wifi] Connecting to %s", WIFI_SSID);
+  WiFi.onEvent(onWifiEvent);
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);          // disable modem sleep — keeps the AP from dropping us
+  WiFi.setAutoReconnect(true);   // let the core re-associate on its own
+  WiFi.persistent(false);        // don't wear flash re-storing credentials
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   int retries = 0;
@@ -168,9 +193,11 @@ void writeStatus() {
 }
 
 void syncFirebase() {
-  if (!firebaseReady || WiFi.status() != WL_CONNECTED || !app.ready()) return;
+  if (WiFi.status() != WL_CONNECTED || !app.isInitialized()) return;
 
-  app.loop();
+  app.loop();                 // keep auth/token state machine alive so it can self-heal
+  if (!app.ready()) return;   // not authenticated yet — skip DB I/O this cycle
+  firebaseReady = true;
 
   unsigned long now = millis();
   if (now - lastFirebasePollMs < FIREBASE_POLL_INTERVAL_MS) return;
@@ -213,6 +240,45 @@ void syncFirebase() {
 }
 
 // -----------------------------------------------------------------------------
+// Non-blocking connectivity watchdog. Runs every loop: re-associates WiFi when
+// it drops, rebuilds the Firebase session once the link returns, and reboots as
+// a last resort if we stay offline too long. Reboot is safe — the relay defaults
+// LOW at boot and the MOS hardware timer is independent, so it can never start
+// the pump.
+void ensureConnectivity() {
+  if (WiFi.status() == WL_CONNECTED) {
+    if (offlineSinceMs != 0) {                 // transition: link just came back
+      offlineSinceMs = 0;
+      Serial.println("[wifi] Link restored");
+      if (!app.ready()) {                      // cloud session didn't survive — rebuild it
+        Serial.println("[firebase] Re-initializing after reconnect");
+        initFirebase();
+      }
+    }
+    return;
+  }
+
+  unsigned long now = millis();
+  if (offlineSinceMs == 0) {                   // transition: link just dropped
+    offlineSinceMs = now;
+    firebaseReady  = false;                    // force a Firebase rebuild when we return
+    Serial.println("[wifi] Offline");
+  }
+
+  if (now - lastWifiAttemptMs >= WIFI_RECONNECT_INTERVAL_MS) {
+    lastWifiAttemptMs = now;
+    Serial.println("[wifi] Reconnecting...");
+    WiFi.reconnect();
+  }
+
+  if (WIFI_OFFLINE_REBOOT_MS > 0 && now - offlineSinceMs >= WIFI_OFFLINE_REBOOT_MS) {
+    Serial.println("[wifi] Offline too long — restarting");
+    delay(100);
+    ESP.restart();
+  }
+}
+
+// -----------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
   delay(100);
@@ -239,6 +305,7 @@ void setup() {
 
 // -----------------------------------------------------------------------------
 void loop() {
+  ensureConnectivity();
   syncFirebase();
 
   if (pumpRunning) {

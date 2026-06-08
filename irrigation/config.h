@@ -31,3 +31,10 @@
 // ---- Firebase polling -------------------------------------------------------
 // How often the ESP32 checks Firebase RTDB for a manual-run command.
 #define FIREBASE_POLL_INTERVAL_MS  3000
+
+// ---- WiFi reconnection ------------------------------------------------------
+// The ESP32 can lose its WiFi association after a while (e.g. a router dropping
+// an idle station). These control how the firmware recovers without a manual
+// power-cycle. See ensureConnectivity() in irrigation.ino.
+#define WIFI_RECONNECT_INTERVAL_MS  5000        // how often to retry while offline
+#define WIFI_OFFLINE_REBOOT_MS      600000UL    // reboot after ~10 min offline (0 = never)

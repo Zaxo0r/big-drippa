@@ -190,6 +190,10 @@ void writeStatus() {
   json += "\"wifiRSSI\":" + String(WiFi.RSSI());
   json += "}";
   Database.set<object_t>(aClient, "/status", object_t(json.c_str()));
+  if (aClient.lastError().code() != 0) {
+    Serial.printf("[firebase] set(status) error: code=%d, msg=%s\n",
+                  aClient.lastError().code(), aClient.lastError().message().c_str());
+  }
 }
 
 void syncFirebase() {
@@ -206,7 +210,11 @@ void syncFirebase() {
   // Poll for manual run command
   bool manualRun = Database.get<bool>(aClient, "/commands/manualRun");
 
-  if (aClient.lastError().code() != 0) return;
+  if (aClient.lastError().code() != 0) {
+    Serial.printf("[firebase] get(manualRun) error: code=%d, msg=%s\n",
+                  aClient.lastError().code(), aClient.lastError().message().c_str());
+    return;
+  }
 
   if (manualRun) {
     Serial.println("[firebase] Manual run command received");
@@ -222,7 +230,11 @@ void syncFirebase() {
   // Poll for stop command (remote "Stop pump" from the web app)
   bool stopCmd = Database.get<bool>(aClient, "/commands/stop");
 
-  if (aClient.lastError().code() != 0) return;
+  if (aClient.lastError().code() != 0) {
+    Serial.printf("[firebase] get(stop) error: code=%d, msg=%s\n",
+                  aClient.lastError().code(), aClient.lastError().message().c_str());
+    return;
+  }
 
   if (stopCmd) {
     Serial.println("[firebase] Stop command received");
@@ -279,6 +291,22 @@ void ensureConnectivity() {
 }
 
 // -----------------------------------------------------------------------------
+// Periodic health heartbeat. A fading signal or a slow heap leak will show up
+// here before a drop; if these lines simply STOP, the loop has frozen.
+void logDiagnostics() {
+  static unsigned long lastDiagMs = 0;
+  unsigned long now = millis();
+  if (now - lastDiagMs < 5000) return;
+  lastDiagMs = now;
+  Serial.printf("[diag] up=%lus wifi=%s rssi=%d heap=%u min=%u\n",
+                now / 1000UL,
+                WiFi.status() == WL_CONNECTED ? "connected" : "DOWN",
+                (int)WiFi.RSSI(),
+                (unsigned)ESP.getFreeHeap(),
+                (unsigned)ESP.getMinFreeHeap());
+}
+
+// -----------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
   delay(100);
@@ -305,6 +333,7 @@ void setup() {
 
 // -----------------------------------------------------------------------------
 void loop() {
+  logDiagnostics();
   ensureConnectivity();
   syncFirebase();
 

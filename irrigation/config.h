@@ -38,3 +38,11 @@
 // power-cycle. See ensureConnectivity() in irrigation.ino.
 #define WIFI_RECONNECT_INTERVAL_MS  5000        // how often to retry while offline
 #define WIFI_OFFLINE_REBOOT_MS      600000UL    // reboot after ~10 min offline (0 = never)
+
+// ---- Connection liveness / freeze protection --------------------------------
+// WiFi.status() can report "connected" while the link is actually dead (a
+// half-open connection the driver hasn't noticed), which hangs a synchronous
+// Firebase call. These bound that failure and guarantee recovery.
+#define FIREBASE_SOCKET_TIMEOUT_S   8           // SSL read timeout so a call can't hang forever
+#define FIREBASE_STALL_MS           30000UL     // no successful Firebase op this long => force reconnect
+#define WDT_TIMEOUT_S               30          // hardware watchdog: reboot if loop() stalls this long

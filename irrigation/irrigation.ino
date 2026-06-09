@@ -21,6 +21,8 @@
 #define ENABLE_DATABASE
 #include <FirebaseClient.h>
 
+#include <esp_task_wdt.h>
+
 // ---- Pump state -------------------------------------------------------------
 static bool          pumpRunning   = false;
 static unsigned long pumpStartedMs = 0;
@@ -41,6 +43,7 @@ static unsigned long     lastFirebasePollMs = 0;
 // ---- WiFi connectivity ------------------------------------------------------
 static unsigned long     offlineSinceMs     = 0;  // 0 = currently online
 static unsigned long     lastWifiAttemptMs  = 0;
+static unsigned long     lastFirebaseOkMs   = 0;  // last successful Firebase op (0 = none yet)
 
 // ---- Time -------------------------------------------------------------------
 static bool timeReady = false;
@@ -163,6 +166,7 @@ void initFirebase() {
   }
 
   ssl_client.setInsecure();
+  ssl_client.setTimeout(FIREBASE_SOCKET_TIMEOUT_S);  // bound SSL reads so a dead socket can't hang the loop
 
   Serial.println("[firebase] Initializing...");
   initializeApp(aClient, app, getAuth(user_auth));
@@ -176,6 +180,7 @@ void initFirebase() {
   if (firebaseReady) {
     app.getApp<RealtimeDatabase>(Database);
     Database.url(FIREBASE_DATABASE_URL);
+    lastFirebaseOkMs = millis();
     Serial.println("[firebase] Authenticated and ready");
   } else {
     Serial.println("[firebase] Auth FAILED");
@@ -215,6 +220,7 @@ void syncFirebase() {
                   aClient.lastError().code(), aClient.lastError().message().c_str());
     return;
   }
+  lastFirebaseOkMs = millis();  // confirmed round-trip — Firebase is reachable
 
   if (manualRun) {
     Serial.println("[firebase] Manual run command received");
@@ -267,6 +273,21 @@ void ensureConnectivity() {
         initFirebase();
       }
     }
+
+    // Silent link death: WiFi still reports "connected" but nothing is getting
+    // through (a half-open link the driver hasn't noticed). WiFi.status() can't
+    // be trusted, so fall back to Firebase liveness and force a hard radio reset.
+    if (app.isInitialized() && lastFirebaseOkMs != 0 &&
+        millis() - lastFirebaseOkMs > FIREBASE_STALL_MS) {
+      Serial.printf("[recover] No Firebase success in %lus — forcing WiFi reset\n",
+                    (millis() - lastFirebaseOkMs) / 1000UL);
+      lastFirebaseOkMs = millis();             // don't re-trigger every iteration
+      firebaseReady = false;
+      WiFi.disconnect(true);                   // radio off — unsticks a wedged link
+      delay(200);
+      WiFi.mode(WIFI_STA);
+      WiFi.begin(WIFI_SSID, WIFI_PASSWORD);    // offline path takes over next loop
+    }
     return;
   }
 
@@ -298,12 +319,35 @@ void logDiagnostics() {
   unsigned long now = millis();
   if (now - lastDiagMs < 5000) return;
   lastDiagMs = now;
-  Serial.printf("[diag] up=%lus wifi=%s rssi=%d heap=%u min=%u\n",
+  unsigned long fbAge = lastFirebaseOkMs ? (now - lastFirebaseOkMs) / 1000UL : 0;
+  Serial.printf("[diag] up=%lus wifi=%s rssi=%d heap=%u min=%u fbAge=%lus\n",
                 now / 1000UL,
                 WiFi.status() == WL_CONNECTED ? "connected" : "DOWN",
                 (int)WiFi.RSSI(),
                 (unsigned)ESP.getFreeHeap(),
-                (unsigned)ESP.getMinFreeHeap());
+                (unsigned)ESP.getMinFreeHeap(),
+                fbAge);
+}
+
+// -----------------------------------------------------------------------------
+// Hardware task watchdog — the true last resort. If loop() ever stalls longer
+// than WDT_TIMEOUT_S (e.g. a network call wedges despite the socket timeout),
+// the chip resets itself. Armed AFTER the blocking bring-up so the initial
+// connect sequence can't trip it.
+void setupWatchdog() {
+#if defined(ESP_ARDUINO_VERSION_MAJOR) && ESP_ARDUINO_VERSION_MAJOR >= 3
+  esp_task_wdt_config_t cfg = {
+    .timeout_ms     = WDT_TIMEOUT_S * 1000,
+    .idle_core_mask = 0,
+    .trigger_panic  = true,
+  };
+  esp_task_wdt_reconfigure(&cfg);   // core 3.x already inits the TWDT
+  esp_task_wdt_add(NULL);
+#else
+  esp_task_wdt_init(WDT_TIMEOUT_S, true);
+  esp_task_wdt_add(NULL);
+#endif
+  Serial.printf("[wdt] Task watchdog armed (%ds)\n", WDT_TIMEOUT_S);
 }
 
 // -----------------------------------------------------------------------------
@@ -329,10 +373,12 @@ void setup() {
   connectWiFi();
   syncTime();
   initFirebase();
+  setupWatchdog();   // arm the watchdog only after the blocking bring-up above
 }
 
 // -----------------------------------------------------------------------------
 void loop() {
+  esp_task_wdt_reset();   // feed the watchdog; if the loop ever wedges, the chip resets
   logDiagnostics();
   ensureConnectivity();
   syncFirebase();

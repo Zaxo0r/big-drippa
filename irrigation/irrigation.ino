@@ -224,7 +224,17 @@ void syncFirebase() {
 
   if (manualRun) {
     Serial.println("[firebase] Manual run command received");
+    // Clear the command FIRST and confirm it stuck. On a poor link this write
+    // can fail or hang; if we started the pump anyway, a watchdog reboot would
+    // re-read the still-set command and water again — repeatedly, risking an
+    // overflow / dry reservoir. Skipping is the safe failure (under-water,
+    // never flood); the command stays queued and we retry next poll.
     Database.set<bool>(aClient, "/commands/manualRun", false);
+    if (aClient.lastError().code() != 0) {
+      Serial.printf("[firebase] Could not clear manualRun (code=%d) — skipping start to avoid re-trigger\n",
+                    aClient.lastError().code());
+      return;
+    }
 
     if (!pumpRunning) {
       startPump("firebase");

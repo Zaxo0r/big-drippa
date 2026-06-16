@@ -382,6 +382,24 @@ void setupWatchdog() {
 }
 
 // -----------------------------------------------------------------------------
+// Maps the chip's last reset cause to a readable label, so each boot states
+// exactly why the previous run ended (watchdog hang vs crash vs power, etc.).
+const char *resetReasonStr(esp_reset_reason_t r) {
+  switch (r) {
+    case ESP_RST_POWERON:   return "POWERON (cold power-up)";
+    case ESP_RST_EXT:       return "EXT (reset pin)";
+    case ESP_RST_SW:        return "SW (esp_restart)";
+    case ESP_RST_PANIC:     return "PANIC (crash/exception)";
+    case ESP_RST_INT_WDT:   return "INT_WDT (interrupt watchdog)";
+    case ESP_RST_TASK_WDT:  return "TASK_WDT (loop hang)";
+    case ESP_RST_WDT:       return "WDT (other watchdog)";
+    case ESP_RST_BROWNOUT:  return "BROWNOUT (power sag)";
+    case ESP_RST_DEEPSLEEP: return "DEEPSLEEP";
+    default:                return "UNKNOWN";
+  }
+}
+
+// -----------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
   delay(100);
@@ -400,6 +418,7 @@ void setup() {
   Serial.println();
   Serial.println("Big Drippa - ESP32 Drip Irrigation Controller");
   Serial.printf("Safety cap: %d s\n", MAX_PUMP_ON_SECONDS);
+  Serial.printf("[boot] last reset: %d %s\n", (int)esp_reset_reason(), resetReasonStr(esp_reset_reason()));
 
   connectWiFi();
   syncTime();

@@ -273,7 +273,7 @@ void syncFirebase() {
 // the WiFi driver, which can clear a wedged PHY/MAC state that a plain reconnect
 // leaves stuck (the kind that otherwise needs a manual power cycle).
 void resetWifiRadio() {
-  WiFi.disconnect(true, true);   // disconnect, radio off, forget stored AP
+  WiFi.disconnect(true);         // radio off (keep stored creds — don't over-erase)
   WiFi.mode(WIFI_OFF);
   delay(300);
   WiFi.mode(WIFI_STA);
@@ -297,16 +297,19 @@ void ensureConnectivity() {
       }
     }
 
-    // Silent link death: WiFi still reports "connected" but nothing is getting
-    // through (a half-open link the driver hasn't noticed). WiFi.status() can't
-    // be trusted, so fall back to Firebase liveness and force a hard radio reset.
+    // WiFi is up but the cloud may be unreachable. Other LAN clients stay fine,
+    // so the radio is NOT the problem — tearing it down just churns and can
+    // break our own routing. The FirebaseClient retries every poll and recovers
+    // on its own when a transient internet/router hiccup clears. Only if the
+    // cloud stays unreachable for a long stretch do we do a CLEAN reboot: a
+    // fresh boot reliably reconnects and resets the router's view of this client.
     if (app.isInitialized() && lastFirebaseOkMs != 0 &&
-        millis() - lastFirebaseOkMs > FIREBASE_STALL_MS) {
-      Serial.printf("[recover] No Firebase success in %lus — forcing WiFi reset\n",
+        millis() - lastFirebaseOkMs > FIREBASE_REBOOT_MS) {
+      Serial.printf("[recover] Cloud unreachable for %lus despite healthy WiFi — clean restart\n",
                     (millis() - lastFirebaseOkMs) / 1000UL);
-      lastFirebaseOkMs = millis();             // don't re-trigger every iteration
-      firebaseReady = false;
-      resetWifiRadio();                        // offline path takes over next loop
+      WiFi.disconnect(true);
+      delay(200);
+      ESP.restart();
     }
     return;
   }

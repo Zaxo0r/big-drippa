@@ -44,5 +44,5 @@
 // half-open connection the driver hasn't noticed), which hangs a synchronous
 // Firebase call. These bound that failure and guarantee recovery.
 #define FIREBASE_SOCKET_TIMEOUT_S   8           // SSL read timeout so a call can't hang forever
-#define FIREBASE_STALL_MS           30000UL     // no successful Firebase op this long => force reconnect
-#define WDT_TIMEOUT_S               30          // hardware watchdog: reboot if loop() stalls this long
+#define FIREBASE_REBOOT_MS          120000UL    // cloud unreachable this long (WiFi still up) => clean reboot
+#define WDT_TIMEOUT_S               45          // hardware watchdog: reboot if loop() truly stalls this long

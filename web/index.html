@@ -313,6 +313,54 @@
     .bd-history__count { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-low); letter-spacing: var(--ls-tight); }
     .bd-history__empty { padding: var(--sp-5) 0; text-align: center; color: var(--text-low); font-family: var(--font-sans); font-size: var(--fs-sm); }
 
+    /* Watering outlook (sun -> drying -> water) */
+    .bd-dash__outlook { margin-bottom: 20px; }
+    .bd-outlook__strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-3); }
+    @media (max-width: 720px) { .bd-outlook__strip { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) { .bd-outlook__strip { grid-template-columns: 1fr; } }
+
+    /* Condition color hook (set per tile via cond-*) */
+    .bd-wx.cond-sunny { --cond: var(--amber-400); }
+    .bd-wx.cond-part  { --cond: var(--amber-300); }
+    .bd-wx.cond-cloud { --cond: var(--text-mid); }
+    .bd-wx.cond-rain  { --cond: var(--aqua-400); }
+
+    .bd-wx { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-3);
+      padding: var(--sp-4); border-radius: var(--r-md); border: 1px solid var(--border-soft);
+      background: linear-gradient(165deg, color-mix(in oklab, var(--cond, var(--text-low)) 20%, var(--surface-sunk)), var(--surface-sunk) 64%); }
+    .bd-wx::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--cond, var(--text-low)); opacity: 0.9; }
+    .bd-wx--today { border-color: var(--aqua-400); box-shadow: var(--edge-top); }
+    .bd-wx--past { opacity: 0.64; }
+
+    .bd-wx__when { display: flex; flex-direction: column; gap: 2px; }
+    .bd-wx__rel { font-family: var(--font-sans); font-weight: var(--fw-bold); font-size: var(--fs-sm); letter-spacing: var(--ls-tight); color: var(--text-hi); white-space: nowrap; }
+    .bd-wx--today .bd-wx__rel { color: var(--aqua-300); }
+    .bd-wx__date { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-low); white-space: nowrap; }
+
+    /* Big corner condition icon */
+    .bd-wx__icon { position: absolute; top: 14px; right: 14px; display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; color: var(--cond, var(--text-mid)); }
+    .bd-wx__icon i, .bd-wx__icon svg { width: 34px; height: 34px; }
+    .bd-wx__cond { font-family: var(--font-sans); font-weight: var(--fw-bold); font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--cond, var(--text-mid)); white-space: nowrap; }
+
+    .bd-wx__sun { display: flex; align-items: baseline; gap: var(--sp-1); }
+    .bd-wx__sun-val { font-family: var(--font-mono); font-weight: var(--fw-medium); font-size: 30px; line-height: var(--lh-tight); letter-spacing: var(--ls-tight); color: var(--amber-400); font-variant-numeric: tabular-nums; }
+    .bd-wx__sun-unit { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--text-low); }
+    .bd-wx__meta { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-mid); font-variant-numeric: tabular-nums; }
+    .bd-wx__temp-lo { color: var(--text-low); }
+    .bd-wx__rain { color: var(--aqua-300); }
+
+    .bd-wx__water { margin-top: auto; width: 100%; padding-top: var(--sp-3); border-top: 1px solid var(--border-soft); }
+    .bd-wx__watered { display: flex; align-items: center; gap: var(--sp-2); }
+    .bd-wx__watered .bd-ico { color: var(--aqua-400); flex: none; }
+    .bd-wx__watered-label { font-family: var(--font-sans); font-weight: var(--fw-semibold); font-size: var(--fs-sm); color: var(--text-mid); white-space: nowrap; }
+    .bd-wx__watered-val { margin-left: auto; font-family: var(--font-mono); font-weight: var(--fw-medium); font-size: var(--fs-body); letter-spacing: var(--ls-tight); color: var(--aqua-300); font-variant-numeric: tabular-nums; }
+    .bd-wx__dry { display: flex; align-items: center; gap: var(--sp-2); color: var(--text-low); }
+    .bd-wx__dry .bd-ico { color: var(--text-low); flex: none; }
+    .bd-wx__dry-label { font-family: var(--font-sans); font-weight: var(--fw-medium); font-size: var(--fs-sm); white-space: nowrap; }
+
+    .bd-outlook__msg { grid-column: 1 / -1; padding: var(--sp-5) 0; text-align: center; color: var(--text-low); font-family: var(--font-sans); font-size: var(--fs-sm); }
+
     @media (prefers-reduced-motion: reduce) {
       .bd-btn, .bd-iconbtn, .bd-google, .bd-card, .bd-pump__bar-fill { transition: none; }
       .bd-pill--running .bd-pill__dot { animation: none; }
@@ -360,6 +408,18 @@
     </header>
 
     <main class="bd-dash__main">
+
+      <!-- Watering outlook (SMHI weather) -->
+      <section class="bd-card bd-dash__outlook hidden" id="outlook-card">
+        <header class="bd-card__head">
+          <div>
+            <div class="bd-card__eyebrow"><i data-lucide="sun"></i> Sun &amp; drying</div>
+            <div class="bd-card__title">Watering outlook</div>
+          </div>
+        </header>
+        <div class="bd-outlook__strip" id="outlook-strip"></div>
+      </section>
+
       <div class="bd-dash__grid">
         <div class="bd-dash__col">
 
@@ -508,6 +568,9 @@
 
     const historyBody  = $("history-body");
 
+    const outlookCard  = $("outlook-card");
+    const outlookStrip = $("outlook-strip");
+
     // --- Icons (Lucide) -------------------------------------------------
     function renderIcons(root) { if (window.lucide) window.lucide.createIcons(root ? { root } : undefined); }
     function setSlotIcon(slot, name) { slot.innerHTML = `<i data-lucide="${name}"></i>`; renderIcons(slot); }
@@ -583,6 +646,256 @@
         time: formatHistoryTime(entry.startedAt),
         duration: (entry.durationSec != null) ? `${entry.durationSec} s` : null,
       };
+    }
+
+    // --- Weather outlook (SMHI open data) -------------------------------
+    // Four-day "Watering outlook" strip: 2 days ago, Yesterday, Today, Tomorrow.
+    // Sun drives drying → the amber number is the hero. SMHI has no sunshine
+    // *forecast*, so (per the design decision) the two past days show measured
+    // sunshine hours (metobs param 10, nearest radiation station) while Today +
+    // Tomorrow show forecast cloud cover %. Temp / rain / condition come from the
+    // MESAN analysis (past) and the point forecast (today/tomorrow). The
+    // watered/seconds row is sourced from this app's own Firebase /history.
+    const GARDEN_LAT = 58.59, GARDEN_LON = 16.18; // balcony (Norrköping area, Sweden)
+
+    const METFCST_URLS = [
+      `https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/${GARDEN_LON}/lat/${GARDEN_LAT}/data.json`,
+      `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${GARDEN_LON}/lat/${GARDEN_LAT}/data.json`,
+    ];
+    const MESAN_URLS = [
+      `https://opendata-download-metanalys.smhi.se/api/category/mesan2g/version/1/geotype/point/lon/${GARDEN_LON}/lat/${GARDEN_LAT}/data.json`,
+      `https://opendata-download-metanalys.smhi.se/api/category/mesan1g/version/2/geotype/point/lon/${GARDEN_LON}/lat/${GARDEN_LAT}/data.json`,
+    ];
+    const SUN_PARAM_URL = "https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/10.json";
+    const sunDataUrl = (key) =>
+      `https://opendata-download-metobs.smhi.se/api/version/1.0/parameter/10/station/${key}/period/latest-months/data.json`;
+
+    const COND_META = {
+      sunny: { label: "Sunny",    icon: "sun" },
+      part:  { label: "Part sun", icon: "cloud-sun" },
+      cloud: { label: "Cloudy",   icon: "cloud" },
+      rain:  { label: "Rain",     icon: "cloud-rain" },
+    };
+
+    let weatherDays  = null; // [{ when, rel, date, key, cond, label, icon, sun, cloudPct, temp, tempLo, rain }]
+    let wateredByDate = {};  // "YYYY-MM-DD" -> total watered seconds that day
+
+    const dateKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    function haversine(aLat, aLon, bLat, bLon) {
+      const R = 6371, toRad = (x) => (x * Math.PI) / 180;
+      const dLat = toRad(bLat - aLat), dLon = toRad(bLon - aLon);
+      const s = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(s));
+    }
+
+    async function fetchJSON(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status} ${url}`);
+      return res.json();
+    }
+    async function fetchFirst(urls) {
+      let lastErr;
+      for (const u of urls) { try { return await fetchJSON(u); } catch (e) { lastErr = e; } }
+      throw lastErr || new Error("no url");
+    }
+
+    // SMHI shifted from the classic { timeSeries:[{ validTime, parameters:[{name,values}] }] }
+    // shape to a flat { time, data:{ name:value } } shape. Read tolerantly from both.
+    function extractSeries(doc) {
+      if (doc && Array.isArray(doc.timeSeries)) return doc.timeSeries;
+      if (doc && Array.isArray(doc.data)) return doc.data;
+      return [];
+    }
+    const entryTime = (e) => new Date(e.time || e.validTime);
+    function paramVal(entry, names) {
+      if (entry.data && typeof entry.data === "object" && !Array.isArray(entry.data)) {
+        for (const n of names) if (entry.data[n] != null) return Number(entry.data[n]);
+      }
+      if (Array.isArray(entry.parameters)) {
+        for (const p of entry.parameters) {
+          if (names.includes(p.name)) {
+            const v = Array.isArray(p.values) ? p.values[0] : p.value;
+            if (v != null) return Number(v);
+          }
+        }
+      }
+      return null;
+    }
+    function cloudPctOf(entry) {
+      const oct = paramVal(entry, ["tcc_mean", "tcc"]);            // octas 0-8
+      if (oct != null) return Math.round((oct / 8) * 100);
+      const frac = paramVal(entry, ["total_cloud_area_fraction", "cloud_area_fraction"]);
+      if (frac != null) return Math.round(frac <= 1 ? frac * 100 : frac); // fraction or %
+      return null;
+    }
+
+    function condFromSymbol(sym) {
+      if (sym == null || isNaN(sym)) return null;
+      if (sym <= 2) return "sunny";   // clear / nearly clear
+      if (sym <= 4) return "part";    // variable / half-clear
+      if (sym <= 7) return "cloud";   // cloudy / overcast / fog
+      return "rain";                  // 8+ = showers / precipitation
+    }
+    function condFromCloud(cloudPct, rainMm) {
+      if (rainMm > 0.2) return "rain";
+      if (cloudPct == null) return "cloud";
+      if (cloudPct < 25) return "sunny";
+      if (cloudPct < 60) return "part";
+      return "cloud";
+    }
+
+    // Group hourly entries by local date -> { temp(max), tempLo(min), rain(sum mm), cloudPct(avg), sym }
+    function aggregateByDate(series) {
+      const acc = {};
+      for (const e of series) {
+        const t = entryTime(e);
+        if (isNaN(t)) continue;
+        const k = dateKey(t);
+        const slot = acc[k] || (acc[k] = { temps: [], rain: 0, clouds: [], syms: [] });
+        const temp = paramVal(e, ["air_temperature", "t"]);
+        const precip = paramVal(e, ["precipitation_amount_mean", "pmean"]); // mm/h
+        const cloud = cloudPctOf(e);
+        const sym = paramVal(e, ["Wsymb2", "wsymb2", "symbol_code"]);
+        if (temp != null) slot.temps.push(temp);
+        if (precip != null) slot.rain += precip;
+        if (cloud != null) slot.clouds.push(cloud);
+        if (sym != null) slot.syms.push(sym);
+      }
+      const out = {};
+      for (const [k, s] of Object.entries(acc)) {
+        out[k] = {
+          temp: s.temps.length ? Math.round(Math.max(...s.temps)) : null,
+          tempLo: s.temps.length ? Math.round(Math.min(...s.temps)) : null,
+          rain: Math.round(s.rain),
+          cloudPct: s.clouds.length ? Math.round(s.clouds.reduce((a, b) => a + b, 0) / s.clouds.length) : null,
+          sym: s.syms.length ? s.syms[Math.floor(s.syms.length / 2)] : null, // ~midday representative
+        };
+      }
+      return out;
+    }
+
+    // Measured sunshine duration for the past days: nearest active radiation
+    // station (metobs param 10), hourly seconds summed per local date.
+    async function fetchSunByDate() {
+      const meta = await fetchJSON(SUN_PARAM_URL);
+      const stations = (meta.station || [])
+        .filter((s) => s.active && s.latitude != null && s.longitude != null)
+        .sort((a, b) => haversine(GARDEN_LAT, GARDEN_LON, a.latitude, a.longitude) -
+                        haversine(GARDEN_LAT, GARDEN_LON, b.latitude, b.longitude));
+      for (const st of stations.slice(0, 5)) {
+        try {
+          const data = await fetchJSON(sunDataUrl(st.key));
+          const byDate = {};
+          for (const v of (data.value || [])) {
+            const sec = Number(v.value);
+            if (isNaN(sec)) continue;
+            const k = dateKey(new Date(Number(v.date)));
+            byDate[k] = (byDate[k] || 0) + sec;
+          }
+          if (Object.keys(byDate).length) return { byDate, station: st };
+        } catch (_) { /* try next-nearest station */ }
+      }
+      throw new Error("no sunshine data");
+    }
+
+    function buildDays(fcByDate, mesanByDate, sunByDate) {
+      const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+      const defs = [
+        { off: -2, when: "past",  rel: "2 days ago" },
+        { off: -1, when: "past",  rel: "Yesterday" },
+        { off: 0,  when: "today", rel: "Today" },
+        { off: 1,  when: "next",  rel: "Tomorrow" },
+      ];
+      return defs.map((def) => {
+        const d = new Date(midnight); d.setDate(d.getDate() + def.off);
+        const k = dateKey(d);
+        // Past -> MESAN analysis (forecast fallback); today/tomorrow -> forecast (MESAN fallback).
+        const agg = def.off < 0
+          ? (mesanByDate[k] || fcByDate[k] || {})
+          : (fcByDate[k] || mesanByDate[k] || {});
+        const rain = agg.rain != null ? agg.rain : 0;
+        const cond = def.when === "past"
+          ? condFromCloud(agg.cloudPct, rain)
+          : (condFromSymbol(agg.sym) || condFromCloud(agg.cloudPct, rain));
+        const meta = COND_META[cond] || COND_META.cloud;
+        const day = {
+          when: def.when, rel: def.rel, key: k,
+          date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          cond, label: meta.label, icon: meta.icon,
+          temp: agg.temp, tempLo: agg.tempLo, rain,
+        };
+        if (def.when === "past") {
+          const sec = sunByDate[k];
+          day.sun = sec != null ? sec / 3600 : null; // measured hours
+        } else {
+          day.cloudPct = agg.cloudPct;               // forecast cloud cover %
+        }
+        return day;
+      });
+    }
+
+    function outlookMessage(text) {
+      outlookStrip.innerHTML = `<div class="bd-outlook__msg">${text}</div>`;
+      outlookCard.classList.remove("hidden");
+    }
+
+    function renderOutlook() {
+      if (!weatherDays) return;
+      outlookStrip.innerHTML = weatherDays.map((d) => {
+        const mod = d.when === "today" ? "bd-wx--today" : (d.when === "past" ? "bd-wx--past" : "");
+        const heroVal = d.when === "past"
+          ? (d.sun != null ? d.sun.toFixed(1) : "—")
+          : (d.cloudPct != null ? String(d.cloudPct) : "—");
+        const heroUnit = d.when === "past" ? "h sun" : "% cloud";
+        const temp = d.temp != null ? `${d.temp}&deg;` : "&mdash;";
+        const tempLo = d.tempLo != null ? `<span class="bd-wx__temp-lo">/ ${d.tempLo}&deg;</span>` : "";
+        const rain = d.rain > 0 ? `<span>&middot;</span><span class="bd-wx__rain">${d.rain} mm</span>` : "";
+        const sec = wateredByDate[d.key];
+        const water = (d.when !== "next" && sec != null && sec > 0)
+          ? `<div class="bd-wx__watered"><i data-lucide="droplet" class="bd-ico"></i><span class="bd-wx__watered-label">Watered</span><span class="bd-wx__watered-val">${Math.round(sec)} s</span></div>`
+          : `<div class="bd-wx__dry"><i data-lucide="droplet-off" class="bd-ico"></i><span class="bd-wx__dry-label">Not watered</span></div>`;
+        return `
+          <div class="bd-wx cond-${d.cond} ${mod}">
+            <span class="bd-wx__icon"><i data-lucide="${d.icon}"></i></span>
+            <div class="bd-wx__when"><span class="bd-wx__rel">${d.rel}</span><span class="bd-wx__date">${d.date}</span></div>
+            <span class="bd-wx__cond">${d.label}</span>
+            <span class="bd-wx__sun"><span class="bd-wx__sun-val">${heroVal}</span><span class="bd-wx__sun-unit">${heroUnit}</span></span>
+            <div class="bd-wx__meta"><span>${temp}</span>${tempLo}${rain}</div>
+            <div class="bd-wx__water">${water}</div>
+          </div>`;
+      }).join("");
+      outlookCard.classList.remove("hidden");
+      renderIcons(outlookStrip);
+    }
+
+    function rebuildWateredByDate(entries) {
+      const map = {};
+      for (const [, e] of entries) {
+        if (!e.startedAt) continue;
+        const k = dateKey(new Date(e.startedAt * 1000));
+        map[k] = (map[k] || 0) + (Number(e.durationSec) || 0);
+      }
+      wateredByDate = map;
+    }
+
+    async function loadWeather() {
+      outlookMessage("Loading weather…");
+      const [fcR, mesanR, sunR] = await Promise.allSettled([
+        fetchFirst(METFCST_URLS),
+        fetchFirst(MESAN_URLS),
+        fetchSunByDate(),
+      ]);
+      if (fcR.status !== "fulfilled" && mesanR.status !== "fulfilled") {
+        weatherDays = null;
+        outlookMessage("Weather unavailable.");
+        return;
+      }
+      const fcByDate = fcR.status === "fulfilled" ? aggregateByDate(extractSeries(fcR.value)) : {};
+      const mesanByDate = mesanR.status === "fulfilled" ? aggregateByDate(extractSeries(mesanR.value)) : {};
+      const sunByDate = sunR.status === "fulfilled" ? sunR.value.byDate : {};
+      weatherDays = buildDays(fcByDate, mesanByDate, sunByDate);
+      renderOutlook();
     }
 
     // --- State ----------------------------------------------------------
@@ -722,6 +1035,8 @@
         const prevLen = allEvents.length;
         allEvents = entries.map(([, e]) => mapHistory(e));
         latestHistoryStartedAt = entries.length ? entries[0][1].startedAt : null;
+        rebuildWateredByDate(entries);
+        if (weatherDays) renderOutlook(); // refresh per-day watered status
         if (allEvents.length > prevLen) visibleCount = HISTORY_PAGE_SIZE; // snap to first page when a new cycle runs
         visibleCount = Math.min(visibleCount, Math.max(HISTORY_PAGE_SIZE, allEvents.length));
         renderHistory();
@@ -732,6 +1047,8 @@
       // when no new /status snapshot arrives (a real dropout stops updates).
       tickId = setInterval(renderPumpAndDevice, 1000);
       renderPumpAndDevice();
+
+      loadWeather(); // SMHI outlook strip (independent of the live pump feed)
     }
 
     function stopListeners() {
@@ -740,6 +1057,8 @@
       if (tickId)       { clearInterval(tickId); tickId = null; }
       lastStatus = null; runningSince = null; latestHistoryStartedAt = null;
       allEvents = []; visibleCount = HISTORY_PAGE_SIZE; prevConnIcon = null;
+      weatherDays = null; wateredByDate = {};
+      outlookStrip.innerHTML = ""; outlookCard.classList.add("hidden");
     }
 
     // --- Auth -----------------------------------------------------------
